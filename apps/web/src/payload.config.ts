@@ -22,6 +22,7 @@ import { GameCampaigns, GameSessions, Rewards } from './collections/Games'
 import { SiteSettings } from './globals/SiteSettings'
 import { LOCALES, DEFAULT_LOCALE } from './i18n/config'
 import { withGlobalRefresh, withRefresh } from './lib/refresh'
+import { telegramEndpoints } from './endpoints/telegram'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -66,6 +67,8 @@ export default buildConfig({
     Users,
   ],
   globals: [withGlobalRefresh(SiteSettings)],
+  // Telegram bot webhook, its call button, and the daily job (expired reservations + morning digest)
+  endpoints: telegramEndpoints,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },

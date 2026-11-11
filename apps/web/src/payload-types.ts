@@ -1023,6 +1023,17 @@ export interface SiteSetting {
    * Tick the games shown on the Play page (none ticked = all of them). With more than one, visitors pick. All games score on the same scale, so the campaign reward tiers work the same for each.
    */
   games?: ('toy-drop' | 'memory' | 'whack' | 'stack')[] | null;
+  /**
+   * Send /start to the bot in Telegram — it replies with this number. With staff: add the bot to a group and send /start there. Only this chat can manage orders.
+   */
+  telegramChatId?: string | null;
+  telegramDigest?: boolean | null;
+  telegramDigestAt?: string | null;
+  msgConfirmed?: string | null;
+  msgPayment?: string | null;
+  msgPickup?: string | null;
+  msgShipped?: string | null;
+  msgCancelled?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1043,6 +1054,14 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   announcement?: T;
   savedTotal?: T;
   games?: T;
+  telegramChatId?: T;
+  telegramDigest?: T;
+  telegramDigestAt?: T;
+  msgConfirmed?: T;
+  msgPayment?: T;
+  msgPickup?: T;
+  msgShipped?: T;
+  msgCancelled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

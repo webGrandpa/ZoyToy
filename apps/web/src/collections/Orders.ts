@@ -1,7 +1,7 @@
 import type { CollectionAfterChangeHook, CollectionConfig, Endpoint, Payload } from 'payload'
 import { isTeam } from '../lib/access'
 import { L } from '../lib/labels'
-import { notifyTelegram } from '../lib/telegram'
+import { inBackground, notifyNewOrder } from '../lib/telegram/bot'
 
 const RESERVE_HOURS = 24
 const DELIVERY = ['pickup', 'courier', 'post', 'bus'] as const
@@ -98,7 +98,11 @@ const requestEndpoint: Endpoint = {
     for (const p of available) {
       await req.payload.update({ collection: 'products', id: p.id, data: { status: 'reserved' }, overrideAccess: true })
     }
-    await notifyTelegram(order).catch((e) => req.payload.logger.warn(`Telegram notify failed: ${String(e)}`))
+    // the shop's Telegram hears about it after the customer already has the answer
+    inBackground(
+      () => notifyNewOrder(req.payload, order),
+      (e) => req.payload.logger.warn(`Telegram notify failed: ${String(e)}`),
+    )
     return Response.json({ number: order.number, reservedUntil, total })
   },
 }
@@ -159,6 +163,8 @@ export const Orders: CollectionConfig = {
       ],
     },
     { name: 'reservedUntil', type: 'date', label: L('დაჯავშნილია მდე', 'Бронь до', 'Reserved until'), admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
+    // ready-made messages to the customer: WhatsApp / Telegram / copy (docs/08 §3.2)
+    { name: 'customerMessages', type: 'ui', admin: { position: 'sidebar', components: { Field: '/components/admin/OrderMessages#OrderMessages' } } },
     {
       type: 'row',
       fields: [

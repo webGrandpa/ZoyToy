@@ -115,3 +115,21 @@ html[data-theme="dark"] .zt-tile, html[data-theme="dark"] .zt-home__recent { bor
   .zt-home__recent li a .zt-st { grid-column: 2; justify-self: start; }
 }
 @media (prefers-reduced-motion: reduce) { .zt-home__zoy, .zt-tile__badge { animation: none; } }
+
+/* ---------- order page: ready-made messages to the customer (OrderMessages.tsx) ---------- */
+.zt-msgs { display: grid; gap: 8px; margin: 4px 0 18px; padding: 12px; border: 3px solid #1F1A3D; border-radius: 18px; background: var(--theme-elevation-0); box-shadow: 0 4px 0 #1F1A3D; }
+.zt-msgs__title { margin: 0 0 2px; font-weight: 800; font-size: 15px; }
+.zt-msgs__title span { font-weight: 600; font-size: 12px; opacity: .7; margin-left: 4px; }
+.zt-msg { display: grid; gap: 6px; padding: 10px; border-radius: 12px; background: var(--theme-elevation-50); }
+.zt-msg--now { background: #FFF1C9; box-shadow: inset 0 0 0 2px #FFC83D; }
+.zt-msg__name { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.zt-msg__name em { font-style: normal; font-size: 11px; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: #FFC83D; color: #1F1A3D; }
+.zt-msg__btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.zt-msg__btn { display: grid; place-items: center; min-height: 40px; padding: 0 6px; border-radius: 10px; border: 2px solid #1F1A3D; background: #fff; color: #1F1A3D !important; font: inherit; font-size: 12.5px; font-weight: 700; text-decoration: none !important; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-tap-highlight-color: transparent; }
+.zt-msg__btn:active { transform: translateY(1px); }
+.zt-msg__btn--wa { background: #8AF0CE; }
+.zt-msg__btn--tg { background: #7FD8FF; }
+.zt-msg__btn--off { opacity: .45; cursor: not-allowed; }
+.zt-msg__text summary { cursor: pointer; font-size: 12px; opacity: .75; }
+.zt-msg__text p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 768px) { .zt-msg__btn { min-height: 44px; font-size: 13.5px; } }

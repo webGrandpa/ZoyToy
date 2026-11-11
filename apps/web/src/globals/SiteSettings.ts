@@ -1,7 +1,20 @@
-import type { GlobalConfig } from 'payload'
+import type { Field, GlobalConfig } from 'payload'
 import { anyone, isAdmin } from '../lib/access'
 import { L } from '../lib/labels'
 import { GAME_IDS } from '@zoytoy/games/catalog'
+import { asLang, DEFAULT_TEMPLATES, PLACEHOLDERS, TEMPLATE_FIELD, TEMPLATE_KEYS, TEMPLATE_LABEL } from '../lib/telegram/templates'
+
+/** One editable customer message per situation, in all three languages; empty = the built-in text. */
+const messageFields: Field[] = TEMPLATE_KEYS.map((key) => ({
+  name: TEMPLATE_FIELD[key],
+  type: 'textarea',
+  localized: true,
+  label: TEMPLATE_LABEL[key],
+  defaultValue: ({ locale }: { locale?: string }) => DEFAULT_TEMPLATES[key][asLang(locale)],
+  admin: { rows: 4 },
+}))
+
+const chatIdError = { ka: 'მხოლოდ ციფრები (ჯგუფისას წინ „-“)', ru: 'Только цифры (для группы — с «-» впереди)', en: 'Digits only (groups start with “-”)' }
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -70,6 +83,41 @@ export const SiteSettings: GlobalConfig = {
               },
             },
           ],
+        },
+        {
+          label: 'Telegram',
+          description: L(
+            'ახალი შეკვეთები ბოტში მოდის ფოტოთი და ღილაკებით (დადასტურება, გადახდა, გაგზავნა, გაუქმება, WhatsApp, დარეკვა). დაყენება: docs/09.',
+            'Новые заказы приходят в бот с фото и кнопками (подтвердить, оплачен, отправлен, отменить, WhatsApp, позвонить). Настройка: docs/09.',
+            'New orders reach the bot with a photo and buttons (confirm, paid, shipped, cancel, WhatsApp, call). Setup: docs/09.',
+          ),
+          fields: [
+            {
+              name: 'telegramChatId',
+              type: 'text',
+              label: L('ჩატის ნომერი', 'Номер чата', 'Chat ID'),
+              validate: (value: unknown, { req }: { req: { i18n?: { language?: string } } }) =>
+                !value || /^-?\d{5,20}$/.test(String(value).trim()) || chatIdError[asLang(req.i18n?.language)],
+              admin: {
+                description: L(
+                  'ბოტს Telegram-ში მისწერე /start — ის ამ ნომრით გიპასუხებს. თანამშრომლებთან ერთად: დაამატე ბოტი ჯგუფში და იქ დაწერე /start. მხოლოდ ამ ჩატს შეუძლია შეკვეთების მართვა.',
+                  'Напишите боту /start в Telegram — он ответит этим номером. Вместе с сотрудниками: добавьте бота в группу и напишите /start там. Управлять заказами может только этот чат.',
+                  'Send /start to the bot in Telegram — it replies with this number. With staff: add the bot to a group and send /start there. Only this chat can manage orders.',
+                ),
+              },
+            },
+            { name: 'telegramDigest', type: 'checkbox', defaultValue: true, label: L('დილის შეჯამება ყოველდღე 10:00-ზე', 'Утренняя сводка каждый день в 10:00', 'Morning digest every day at 10:00') },
+            { name: 'telegramDigestAt', type: 'date', admin: { hidden: true } },
+          ],
+        },
+        {
+          label: L('შეტყობინებები', 'Сообщения', 'Messages'),
+          description: L(
+            `მზა ტექსტები მყიდველისთვის. Telegram-ის ბოტი და შეკვეთის გვერდი WhatsApp-ს ამ ტექსტით ხსნის, მყიდველის ენაზე (ენა — ზემოთ). ცარიელი ველი = სტანდარტული ტექსტი. ჩასასმელი: ${PLACEHOLDERS.join(' ')}`,
+            `Готовые тексты для покупателя. Бот в Telegram и страница заказа открывают WhatsApp с этим текстом на языке покупателя (язык — вверху). Пустое поле = стандартный текст. Подстановки: ${PLACEHOLDERS.join(' ')}`,
+            `Ready-made texts for the customer. The Telegram bot and the order page open WhatsApp with this text in the customer's language (language switch above). Empty = the built-in text. Placeholders: ${PLACEHOLDERS.join(' ')}`,
+          ),
+          fields: messageFields,
         },
       ],
     },

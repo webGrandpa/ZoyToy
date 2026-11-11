@@ -1,0 +1,117 @@
+/* Zoy Toy admin branding — calm and functional, with the shop's font and colours (docs/04). */
+:root {
+  --font-body: 'FiraGO', 'Noto Sans Georgian', system-ui, sans-serif;
+  --font-serif: 'FiraGO', 'Noto Sans Georgian', system-ui, sans-serif;
+}
+html[data-theme] body, .payload__modal-container, .template-default { font-family: var(--font-body); }
+
+.zt-admin-logo { display: flex; align-items: center; gap: 14px; }
+.zt-admin-logo b { display: block; font-size: 28px; font-weight: 900; letter-spacing: -0.02em; }
+.zt-admin-logo span { display: block; font-size: 13px; opacity: .7; }
+
+/* login screen: a hint of the sunny storefront */
+.template-minimal { background: linear-gradient(180deg, #CFF1FF 0%, #FFF7EC 70%) !important; }
+html[data-theme="dark"] .template-minimal { background: linear-gradient(180deg, #2A2266 0%, #17142E 70%) !important; }
+.template-minimal .template-minimal__wrap { background: var(--theme-elevation-0); border: 3px solid #1F1A3D; border-radius: 24px; box-shadow: 0 8px 0 #1F1A3D; padding: 32px; }
+
+/* primary buttons in the brand violet */
+.btn--style-primary { background-color: #5A3FE6 !important; color: #fff !important; border-radius: 12px !important; }
+.btn--style-primary:hover { background-color: #4B32D6 !important; }
+
+/* ===================== phone-first admin (the shop is run from a phone) ===================== */
+
+/* ---- start screen: quick actions (AdminHome.tsx) ---- */
+.zt-home { display: grid; gap: 18px; margin: 4px 0 34px; }
+.zt-home__hello { display: flex; align-items: center; gap: 12px; }
+.zt-home__zoy { width: 52px; height: 52px; flex: none; animation: zt-nod 4s ease-in-out infinite; }
+.zt-home__hello p { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; }
+.zt-home__tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.zt-tile { position: relative; display: grid; align-content: start; gap: 4px; min-height: 112px; padding: 14px; border-radius: 20px; border: 3px solid #1F1A3D; box-shadow: 0 5px 0 #1F1A3D; color: #1F1A3D !important; text-decoration: none !important; background: #fff; transition: transform .15s ease, box-shadow .15s ease; -webkit-tap-highlight-color: transparent; }
+.zt-tile:active { transform: translateY(4px); box-shadow: 0 1px 0 #1F1A3D; }
+.zt-tile b { font-size: 16px; line-height: 1.2; }
+.zt-tile small { font-size: 12.5px; line-height: 1.3; opacity: .78; }
+.zt-tile__ic { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 4px; border-radius: 12px; background: rgb(255 255 255 / .7); border: 2px solid #1F1A3D; font-size: 21px; line-height: 1; font-weight: 900; }
+.zt-tile__badge { position: absolute; top: -10px; right: -8px; min-width: 30px; height: 30px; padding: 0 8px; display: grid; place-items: center; border-radius: 999px; background: #FF5C93; color: #fff; border: 3px solid #1F1A3D; font-style: normal; font-weight: 900; font-size: 15px; animation: zt-pulse 1.6s ease-in-out infinite; }
+.zt-tile--new { background: #6B4EFF; color: #fff !important; }
+.zt-tile--new .zt-tile__ic { background: #FFC83D; color: #1F1A3D; }
+.zt-tile--orders { background: #FFC83D; }
+.zt-tile--reward { background: #FF8FB5; }
+.zt-tile--photo { background: #7FD8FF; }
+.zt-tile--items { background: #8AF0CE; }
+.zt-tile--games { background: #FFB27D; }
+.zt-tile--settings { background: #E9E2FF; }
+.zt-tile--site { background: #FFF1C9; }
+.zt-home__recent { border: 3px solid #1F1A3D; border-radius: 20px; background: var(--theme-elevation-0); padding: 14px 16px; box-shadow: 0 5px 0 #1F1A3D; }
+.zt-home__recent-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.zt-home__recent h2 { margin: 0; font-size: 18px; }
+.zt-home__recent ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.zt-home__recent li a { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--theme-elevation-50); text-decoration: none; color: inherit; }
+.zt-home__who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .8; }
+.zt-home__sum { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zt-st { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--theme-elevation-150); white-space: nowrap; }
+.zt-st--requested { background: #FFC83D; color: #1F1A3D; } .zt-st--confirmed { background: #7FD8FF; color: #1F1A3D; } .zt-st--paid, .zt-st--completed { background: #8AF0CE; color: #1F1A3D; } .zt-st--cancelled, .zt-st--expired { background: #FFD1DC; color: #1F1A3D; }
+html[data-theme="dark"] .zt-tile, html[data-theme="dark"] .zt-home__recent { border-color: #07051A; box-shadow: 0 5px 0 #07051A; }
+@keyframes zt-nod { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+@keyframes zt-pulse { 50% { scale: 1.12; } }
+@media (max-width: 1024px) { .zt-home__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+@media (max-width: 768px) {
+  /* bigger, thumb-friendly controls; 16px text so iPhone doesn't zoom into every field */
+  .field-type input, .field-type textarea, .field-type select, .rs__input, .rs__single-value, .rs__placeholder, .search-filter__input, .rich-text-lexical .editor { font-size: 16px !important; }
+  .field-type input:not([type="checkbox"]):not([type="radio"]), .rs__control { min-height: 46px !important; }
+  .btn { min-height: 44px; }
+  .btn--size-small { min-height: 38px; }
+  .field-type .field-label { font-size: 14px; }
+  .gutter--left { padding-left: 14px !important; } .gutter--right { padding-right: 14px !important; }
+
+  /* list views become tappable cards instead of a sideways-scrolling table */
+  .table-wrap { overflow: visible; max-width: 100%; width: 100% !important; margin-inline: 0 !important; padding-inline: 0 !important; box-sizing: border-box; }
+  .table-wrap .table, .table-wrap .table table { position: static !important; overflow: visible; width: 100% !important; margin: 0 !important; padding: 0 !important; left: auto !important; transform: none !important; }
+  .table-wrap .table table, .table-wrap .table tbody { display: block; width: 100% !important; min-width: 0 !important; }
+  .table-wrap .table thead { display: none; }
+  .table-wrap .table tbody tr { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 10px; padding: 14px 52px 14px 16px; border: 2px solid var(--theme-elevation-150); border-radius: 16px; background: var(--theme-elevation-0) !important; box-shadow: 0 3px 0 var(--theme-elevation-150); }
+  .table-wrap .table tbody td { display: block; padding: 0 !important; border: 0 !important; background: none !important; min-width: 0; max-width: 100%; font-size: 13.5px; }
+  .table-wrap .table tbody td:nth-child(2) { flex: 1 1 100%; font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .table-wrap .table tbody td:nth-child(2) a { text-decoration: none; }
+  /* the whole card opens the document */
+  .table-wrap .table tbody td:nth-child(2) a::after { content: ""; position: absolute; inset: 0; border-radius: 16px; }
+  .table-wrap .table tbody td.cell-_select { position: absolute; top: 12px; right: 12px; z-index: 1; }
+  .table-wrap .table tbody td:nth-child(n+3) span[class^="selected--"], .table-wrap .table tbody td:nth-child(n+3) .pill { padding: 2px 9px; border-radius: 999px; background: var(--theme-elevation-100); }
+  .table-wrap .table tbody td:nth-child(n+3):empty { display: none; }
+  .collection-list__wrap, .collection-list .gutter { padding-bottom: 20px; }
+  .list-controls__wrap, .list-controls { gap: 8px; }
+
+  /* edit views: the Save button lives in a bar at the bottom, always under the thumb */
+  .doc-controls__controls-wrapper { position: fixed !important; left: 0; right: 0; bottom: 0; z-index: 60; display: flex !important; justify-content: flex-end; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)) !important; background: var(--theme-bg); border-top: 2px solid var(--theme-elevation-150); box-shadow: 0 -8px 20px rgb(0 0 0 / .08); }
+  .doc-controls__controls { flex: 1; display: flex; gap: 10px; }
+  .doc-controls__controls > * { flex: 1; }
+  #action-save, #action-save-draft, #action-publish { width: 100%; min-height: 52px; padding: 0 24px !important; font-size: 17px !important; border-radius: 14px !important; }
+  .doc-controls__popup { flex: none !important; }
+  .collection-edit, .global-edit { padding-bottom: 96px; }
+  .doc-controls__meta { font-size: 12px; flex-wrap: wrap; row-gap: 2px; }
+  .doc-controls__content { overflow: hidden; }
+  /* developer-only bits stay on the computer */
+  .doc-tab[href$="/api"], a.doc-tab[href*="/api"] { display: none !important; }
+
+  /* field tabs scroll sideways with a hint that there is more */
+  .tabs-field__tabs { overflow-x: auto; flex-wrap: nowrap !important; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask: linear-gradient(90deg, #000 calc(100% - 36px), transparent); padding-right: 30px; }
+  .tabs-field__tabs::-webkit-scrollbar { display: none; }
+  .tabs-field__tab-button { flex: none; min-height: 44px; font-size: 15px !important; }
+
+  /* header: long breadcrumbs shrink instead of pushing the account icon off the screen */
+  .app-header__controls-wrapper { min-width: 0; }
+  .app-header__step-nav-wrapper { min-width: 0; flex: 1 1 auto; overflow: hidden; }
+  .step-nav { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; -webkit-mask: linear-gradient(90deg, #000 calc(100% - 18px), transparent); mask: linear-gradient(90deg, #000 calc(100% - 18px), transparent); }
+  .app-header__localizer-spacing { flex: none; margin-left: 6px !important; }
+  .app-header__account { flex: none; }
+  html, body { overflow-x: clip; }
+
+  /* the menu: bigger rows */
+  .nav__link { min-height: 44px; display: flex; align-items: center; font-size: 17px; }
+
+  .zt-tile { min-height: 104px; padding: 12px; }
+  .zt-home__recent li a { grid-template-columns: auto 1fr auto; }
+  .zt-home__recent li a .zt-home__sum { grid-column: 3; }
+  .zt-home__recent li a .zt-st { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) { .zt-home__zoy, .zt-tile__badge { animation: none; } }

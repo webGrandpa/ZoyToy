@@ -1,0 +1,67 @@
+/* Zoy Toy shared component styles: sticker objects, squish buttons, badges, chips. */
+
+.zt-sticker { background: var(--zt-surface); border: 2px solid var(--zt-edge); border-radius: var(--zt-r-lg); box-shadow: 0 6px 0 var(--zt-edge); }
+
+/* Squish button — sinks into its own hard shadow like a plastic toy button */
+.zt-btn {
+  --bg: var(--zt-grape); --ink: var(--zt-on-grape);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 0 24px; border-radius: 16px;
+  background: var(--bg); color: var(--ink);
+  border: 2px solid var(--zt-edge); box-shadow: 0 4px 0 var(--zt-edge);
+  font: 800 17px/1.2 var(--zt-font); cursor: pointer; text-decoration: none; text-align: center;
+  transition: transform var(--zt-dur-fast) var(--zt-ease-out), box-shadow var(--zt-dur-fast) var(--zt-ease-out), background var(--zt-dur-fast);
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.zt-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--zt-edge); }
+.zt-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--zt-edge); transition-duration: 80ms; }
+.zt-btn[disabled], .zt-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; transform: none; }
+.zt-btn--secondary { --bg: var(--zt-surface); --ink: var(--zt-ink); }
+.zt-btn--game { --bg: var(--zt-sun); --ink: var(--zt-on-accent); }
+.zt-btn--rent { --bg: var(--zt-sky); --ink: var(--zt-on-accent); }
+.zt-btn--wa { --bg: #25D366; --ink: #0B2E17; }
+.zt-btn--tg { --bg: #2AABEE; --ink: #06233A; }
+.zt-btn--ig { --bg: var(--zt-bubble); --ink: var(--zt-on-accent); }
+.zt-btn--ghost { --bg: transparent; --ink: var(--zt-ink); border-color: transparent; box-shadow: none; }
+.zt-btn--ghost:hover { background: var(--zt-surface-sunk); box-shadow: none; }
+.zt-btn--sm { min-height: 42px; padding: 0 16px; font-size: 15px; border-radius: 12px; }
+.zt-btn--icon { width: 46px; min-height: 46px; padding: 0; border-radius: 14px; }
+.zt-btn svg { width: 20px; height: 20px; flex: none; }
+
+.zt-icon-btn {
+  position: relative; width: 44px; height: 44px; border-radius: 14px; display: inline-grid; place-items: center;
+  background: var(--zt-surface); color: var(--zt-ink); border: 2px solid var(--zt-edge); box-shadow: 0 3px 0 var(--zt-edge);
+  cursor: pointer; transition: transform var(--zt-dur-fast) var(--zt-ease-out), box-shadow var(--zt-dur-fast) var(--zt-ease-out);
+  text-decoration: none;
+}
+.zt-icon-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--zt-edge); }
+.zt-icon-btn svg { width: 22px; height: 22px; }
+
+.zt-badge {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+  border: 2px solid var(--zt-edge); font-size: 12px; font-weight: 800; line-height: 1.4; color: var(--zt-on-accent);
+  white-space: nowrap; background: var(--zt-surface);
+}
+.zt-badge--sale { background: var(--zt-bubble); }
+.zt-badge--rent { background: var(--zt-sky); }
+.zt-badge--game { background: var(--zt-sun); }
+.zt-badge--new { background: var(--zt-mint); }
+.zt-badge--sold { background: var(--zt-surface-sunk); color: var(--zt-ink); }
+.zt-badge--c-new, .zt-badge--c-new_open_box { background: var(--zt-mint); }
+.zt-badge--c-new_open_box { background: color-mix(in srgb, var(--zt-mint) 55%, var(--zt-surface)); }
+.zt-badge--c-like_new { background: var(--zt-sky); }
+.zt-badge--c-very_good { background: color-mix(in srgb, var(--zt-sky) 45%, var(--zt-surface)); }
+.zt-badge--c-good { background: var(--zt-sun); }
+.zt-badge--c-fair { background: var(--zt-tangerine); }
+
+.zt-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 2px solid var(--zt-edge); background: var(--zt-surface); color: var(--zt-ink);
+  font: 800 14px/1 var(--zt-font); cursor: pointer; box-shadow: 0 2px 0 var(--zt-edge); text-decoration: none; white-space: nowrap;
+}
+.zt-chip[aria-pressed="true"], .zt-chip[aria-checked="true"], .zt-chip[aria-current="true"] { background: var(--zt-grape); color: var(--zt-on-grape); }
+.zt-chip:active { transform: translateY(2px); box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zt-btn, .zt-icon-btn, .zt-chip { transition: none; }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@zoytoy/games",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zoy Toy mini-games: deterministic game logic shared by the browser (play) and the server (score verification)",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}

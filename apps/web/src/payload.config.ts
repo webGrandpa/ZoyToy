@@ -1,0 +1,90 @@
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { en } from '@payloadcms/translations/languages/en'
+import { ru } from '@payloadcms/translations/languages/ru'
+import { ka } from './i18n/admin/ka'
+import path from 'path'
+import { buildConfig } from 'payload'
+import { fileURLToPath } from 'url'
+import sharp from 'sharp'
+
+import { Users } from './collections/Users'
+import { Media } from './collections/Media'
+import { Products } from './collections/Products'
+import { Categories } from './collections/Categories'
+import { Franchises } from './collections/Franchises'
+import { Brands } from './collections/Brands'
+import { Tags } from './collections/Tags'
+import { Locations } from './collections/Locations'
+import { Orders } from './collections/Orders'
+import { GameCampaigns, GameSessions, Rewards } from './collections/Games'
+import { SiteSettings } from './globals/SiteSettings'
+import { LOCALES, DEFAULT_LOCALE } from './i18n/config'
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
+
+function isLocalDatabase(url?: string) {
+  try {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url ?? '').hostname)
+  } catch {
+    return false
+  }
+}
+
+export default buildConfig({
+  admin: {
+    user: Users.slug,
+    importMap: { baseDir: path.resolve(dirname) },
+    theme: 'light',
+    meta: { titleSuffix: ' — Zoy Toy', icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' }] },
+    components: {
+      graphics: { Logo: '/components/admin/AdminBrand#AdminLogo', Icon: '/components/admin/AdminBrand#AdminIcon' },
+      providers: ['/components/admin/AdminTheme#AdminTheme'],
+      // phone-first quick actions above the collection list (the owner runs the shop from a phone)
+      beforeDashboard: ['/components/admin/AdminHome#AdminHome'],
+    },
+  },
+  // Admin UI languages: Georgian (our own translation, src/i18n/admin), Russian, English.
+  // Payload's types list only built-in languages; the runtime accepts any key, so the Georgian pack is cast in.
+  i18n: { supportedLanguages: { ka, ru, en } as never, fallbackLanguage: 'ka' as never },
+  // Content languages: every text the customer sees exists in ka / ru / en.
+  localization: {
+    locales: LOCALES.map((code) => ({ code, label: { ka: 'ქართული', ru: 'Русский', en: 'English' }[code] })),
+    defaultLocale: DEFAULT_LOCALE,
+    fallback: true,
+  },
+  collections: [Orders, Products, Categories, Franchises, Brands, Tags, Media, Locations, GameCampaigns, Rewards, GameSessions, Users],
+  globals: [SiteSettings],
+  editor: lexicalEditor(),
+  secret: process.env.PAYLOAD_SECRET || '',
+  typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
+  // Local development pushes schema changes straight into the database. Hosted databases only change
+  // through migrations (src/migrations): `pnpm payload migrate:create <name>` after every schema change;
+  // the Vercel build runs `payload migrate` before `next build` (apps/web/scripts/vercel-build.sh).
+  // Push is switched off for any non-local database, so a script run without NODE_ENV=production
+  // can never rewrite a hosted schema behind the migrations' back.
+  db: postgresAdapter({
+    // pg already treats Neon's sslmode=require as verify-full but warns on every cold start that the next
+    // major version will weaken it — spelling out verify-full keeps today's strict check and a quiet log
+    pool: { connectionString: (process.env.DATABASE_URL || '').replace(/([?&]sslmode=)(prefer|require|verify-ca)\b/, '$1verify-full') },
+    migrationDir: path.resolve(dirname, 'migrations'),
+    push: isLocalDatabase(process.env.DATABASE_URL) ? undefined : false,
+  }),
+  plugins: [
+    // Photos: Vercel Blob when BLOB_READ_WRITE_TOKEN is set (hosting has no writable disk), apps/web/media
+    // otherwise. The admin's browser uploads straight to Blob, so full-size phone photos skip Vercel's
+    // 4.5 MB request limit; the server still makes the thumb/card/large sizes. Files are public and are
+    // served from the Blob CDN. `alwaysInsertFields` keeps the media table identical in both setups,
+    // so migrations made locally match production.
+    vercelBlobStorage({
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      collections: { media: { prefix: 'media', disablePayloadAccessControl: true } },
+      clientUploads: true,
+      alwaysInsertFields: true,
+    }),
+  ],
+  sharp,
+})

@@ -1,0 +1,24 @@
+# Vercel uploads only what the build needs — never local secrets, media, build output or reports.
+/*
+!/apps
+!/packages
+!/package.json
+!/pnpm-lock.yaml
+!/pnpm-workspace.yaml
+!/turbo.json
+
+node_modules
+.next
+.turbo
+.vercel
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+test.env
+
+apps/web/media
+apps/web/tests
+apps/web/test-results
+apps/web/playwright-report
+apps/web/blob-report

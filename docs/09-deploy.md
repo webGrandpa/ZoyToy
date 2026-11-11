@@ -1,0 +1,55 @@
+# 09 — სადემო ვერსია Vercel-ზე
+
+> **მიზანი:** დამკვეთი ინტერნეტში ხედავს ცვლილებებს, სანამ ვამუშავებთ. ეს **სადემო** გარემოა: Vercel-ის უფასო (Hobby)
+> გეგმა არაკომერციულია ([08 §2](08-lite-mvp.md#2-უფასო-ინფრასტრუქტურა), [01](01-architecture.md)) — ნამდვილი მაღაზიის
+> გაშვებისას გადავდივართ 08 §2-ის გეგმაზე ან Vercel Pro-ზე. კოდი ორივეს უჭერს მხარს.
+
+## 1. რა სად არის
+
+**მისამართი:** https://zoytoy.vercel.app (ადმინი — `/admin`)
+
+| ნაწილი | სად | ცვლადი |
+|--------|-----|--------|
+| საიტი + `/admin` | Vercel პროექტი `zoytoy`, ფუნქციები ფრანკფურტში (`fra1`, `apps/web/vercel.json`) | — |
+| ბაზა | Neon Postgres, Vercel → Storage-იდან (ფრანკფურტი) | `DATABASE_URL` (ავტომატურად) |
+| ფოტოები | Vercel Blob, საქაღალდე `media/`; ადმინი ფოტოს პირდაპირ ბრაუზერიდან ტვირთავს, ამიტომ ტელეფონის დიდ ფოტოებს Vercel-ის 4.5 MB-იანი ლიმიტი არ ეხება; ზომებს (thumb/card/large) სერვერი ჭრის | `BLOB_READ_WRITE_TOKEN` (ავტომატურად) |
+| სესიების და თამაშის ტოკენების გასაღები | ხელით: Settings → Environment Variables | `PAYLOAD_SECRET` |
+| ვადაგასული ჯავშნების გათავისუფლება | Vercel Cron, დღეში ერთხელ 03:00 UTC (არასავალდებულო — ისედაც ხდება ყოველი ახალი შეკვეთისას) | `CRON_SECRET` |
+| შეკვეთის შეტყობინება Telegram-ში | არასავალდებულო | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
+
+- `*.vercel.app` მისამართები Google-ში არ ჩანს (`X-Robots-Tag: noindex`, `next.config.ts`); საკუთარი დომენი ჩვეულებრივ ინდექსირდება.
+- ლოკალურად (`BLOB_READ_WRITE_TOKEN`-ის გარეშე) ფოტოები ისევ `apps/web/media`-ში ინახება.
+
+## 2. ერთჯერადი მომზადება
+
+1. **ბაზა** — Vercel → `zoytoy` → Storage → Create Database → **Neon** → რეგიონი Frankfurt → Free → Connect (ყველა გარემო).
+2. **ფოტოები** — Storage → Create → **Blob** → Frankfurt → **Public** → Connect. შემდეგ საცავის **Projects** ჩანართი → ⋯
+   პროექტის გვერდით → **Update Project Connection** → ✔ „Add a read-write token env var to this connection“.
+   ახალი კავშირი ნაგულისხმევად OIDC-ზეა (მხოლოდ `BLOB_STORE_ID`), Payload-ის ადაპტერს (3.93) და ბრაუზერიდან პირდაპირ
+   ატვირთვას (`handleUpload`) კი `BLOB_READ_WRITE_TOKEN` სჭირდება.
+3. **გასაღები** — რეპოს ფესვიდან: `openssl rand -hex 32 | vercel env add PAYLOAD_SECRET --environment production --sensitive --yes`
+   (ან Settings → Environment Variables-ში ნებისმიერი გრძელი შემთხვევითი სტრიქონი). გასაღების შეცვლა ყველას გამოიყვანს ადმინიდან.
+4. **სადემო ნივთები** (ერთხელ) — `vercel deploy --prod --build-env SEED_DEMO=1`: აწყობისას Vercel-ზევე იწერება
+   კატალოგი და ფოტოები Blob-ში. ბაზის გასაღებები კომპიუტერზე არ ჩამოდის, ადმინის ანგარიში არ იქმნება, უკვე შევსებულ
+   ბაზას არ ეხება. ჩვეულებრივ deploy-ში (`SEED_DEMO`-ს გარეშე) ეს ნაბიჯი არ ეშვება.
+5. **პირველი ადმინი — მაშინვე** — `/admin` → „პირველი მომხმარებლის შექმნა“ (ელფოსტა და პაროლი თავად მფლობელი ირჩევს).
+   სანამ პირველი ანგარიში არ შექმნილა, ამ გვერდს ნებისმიერი ვიზიტორი ხედავს.
+
+## 3. განახლება
+
+- რეპოს ფესვიდან: `vercel deploy --prod` (ან GitHub-თან დაკავშირების შემდეგ — ყოველი push `main`-ზე).
+- Build: `apps/web/scripts/vercel-build.sh` — ჯერ ბაზის მიგრაციები, მერე Next.js (`NODE_ENV=production`).
+- იტვირთება მხოლოდ `.vercelignore`-ით დაშვებული: `apps/`, `packages/`, ფესვის package/lock/workspace ფაილები.
+  `.env`, `media/`, ტესტები და build-ის ნარჩენები — არასდროს.
+
+## 4. ბაზის სქემის ცვლილება — აუცილებელი წესი
+
+ლოკალურად Payload სქემას პირდაპირ ცვლის (push). **ონლაინ ბაზა იცვლება მხოლოდ მიგრაციით.** ყოველი კოლექციის/ველის
+ცვლილების შემდეგ, deploy-მდე:
+
+```bash
+pnpm --filter @zoytoy/web payload migrate:create <მოკლე-სახელი>   # → apps/web/src/migrations/
+```
+
+მიგრაციის გარეშე ონლაინ საიტი ახალ ველზე შეცდომას აჩვენებს. ძველ მიგრაციებს არ ვცვლით — მხოლოდ ახალს ვამატებთ.
+პირდაპირი ცვლილება (push) ჩართულია მხოლოდ ლოკალურ ბაზაზე (`localhost` / `127.0.0.1`) — `payload.config.ts`.

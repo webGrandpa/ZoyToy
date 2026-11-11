@@ -1,0 +1,54 @@
+/*
+ * Zoy Toy design tokens — the single source for colour, type, shape and motion.
+ * Names mirror Figma Variables (zt/grape → --zt-grape). Docs: docs/05-design-system.md
+ */
+:root {
+  --zt-canvas: #FFF7EC;
+  --zt-surface: #FFFFFF;
+  --zt-surface-sunk: #F6EBDB;
+  --zt-ink: #1F1A3D;
+  --zt-ink-soft: #5B5677;
+  --zt-edge: #1F1A3D;
+  --zt-line: #E6D8C3;
+  --zt-grape: #6B4EFF;
+  --zt-grape-deep: #4B32D6;
+  --zt-on-grape: #FFFFFF;
+  --zt-sun: #FFC83D;
+  --zt-bubble: #FF5C93;
+  --zt-sky: #3EC5FF;
+  --zt-mint: #3DDBB0;
+  --zt-tangerine: #FF8A3D;
+  --zt-on-accent: #1F1A3D;
+  --zt-muzzle: #FFE7AE;
+  --zt-kraft: #E8B77E;
+  --zt-kraft-deep: #D49A5A;
+  --zt-success: #127A41;
+  --zt-warning: #9A5B00;
+  --zt-danger: #D62839;
+  --zt-dot: rgb(31 26 61 / .07);
+  --zt-sky-top: #8FDBFF;
+  --zt-sky-mid: #CFF1FF;
+  --zt-night: #2A2160;
+  --zt-cta: #5A3FE6;
+  --zt-shadow-soft: 0 12px 32px rgb(31 26 61 / .14);
+
+  --zt-font: "FiraGO", "Noto Sans Georgian", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --zt-r-sm: 10px; --zt-r-md: 16px; --zt-r-lg: 24px; --zt-r-xl: 32px;
+  --zt-dur-fast: 180ms; --zt-dur-base: 280ms; --zt-dur-slow: 450ms; --zt-dur-hero: 700ms;
+  --zt-ease-out: cubic-bezier(.2, .8, .2, 1);
+  --zt-ease-in: cubic-bezier(.4, 0, 1, 1);
+  --zt-spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+/* "Night playroom" — only when the visitor switches it on (the brand is a sunny playroom by default) */
+:root[data-theme="dark"] {
+  --zt-canvas: #17142E; --zt-surface: #221E42; --zt-surface-sunk: #2B2652; --zt-ink: #F4EFFF; --zt-ink-soft: #B9B2DA;
+  --zt-edge: #07051A; --zt-line: #3A3466; --zt-grape: #9C88FF; --zt-grape-deep: #7B63F2; --zt-on-grape: #120E2A;
+  --zt-sun: #FFD25E; --zt-bubble: #FF77A6; --zt-sky: #5BCFFF; --zt-mint: #4FE3BC; --zt-tangerine: #FF9C5A;
+  --zt-on-accent: #120E2A; --zt-muzzle: #F6D88C; --zt-kraft: #C99559; --zt-kraft-deep: #B07D44;
+  --zt-success: #4ADE80; --zt-warning: #FBBF24; --zt-danger: #FF6B78; --zt-dot: rgb(255 255 255 / .05);
+  --zt-sky-top: #0F0C2E; --zt-sky-mid: #2A2266; --zt-night: #0F0C2E; --zt-cloud: #4A4290;
+  --zt-shadow-soft: 0 12px 32px rgb(0 0 0 / .45);
+  color-scheme: dark;
+}

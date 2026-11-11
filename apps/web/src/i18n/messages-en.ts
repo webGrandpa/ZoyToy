@@ -239,8 +239,8 @@ export const en: Messages = {
       { t: 'Your home', d: 'Delivery across Georgia, or same-day pickup at the shop.' },
     ],
   },
-  stats: { homes: 'toys have already found a new home', saved: 'saved by our customers', savedNote: 'compared with buying new', items: 'items on the shelf right now' },
-  insta: { eyebrow: 'Instagram', title: 'New arrivals show up on Instagram first', lede: 'New items, videos and live streams every day.', cta: 'Follow @zoy.toy', follow: 'Follow' },
+  stats: { homes: 'toys have already found a new home', saved: 'saved by our customers', savedNote: 'compared with buying new', items: 'items in stock right now' },
+  insta: { eyebrow: 'Instagram', title: 'New arrivals show up on Instagram first', lede: 'Every day we post new toys, videos and live streams.', cta: 'Follow @zoy.toy', follow: 'Follow' },
   faq: {
     eyebrow: 'FAQ',
     title: 'What people ask us most',

@@ -48,7 +48,7 @@ export function Journey({ m }: { m: Messages }) {
             <span className="j-icon">{icons[i]}</span>
             <b>{s.t}</b>
             <p>{s.d}</p>
-            {i === m.journey.steps.length - 1 ? <GiraffeHead className="j-zoy" /> : null}
+            {i === m.journey.steps.length - 1 ? <span className="j-peek" aria-hidden="true"><GiraffeHead className="j-zoy" /></span> : null}
           </li>
         ))}
       </ol>

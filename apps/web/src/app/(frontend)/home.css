@@ -135,6 +135,13 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
   .fl.f1 { left: 1%; top: 30%; } .fl.f2 { display: none; }
   .fl.f3 { left: 3%; bottom: 2%; } .fl.f4 { right: 3%; bottom: 4%; }
 }
+/* phones: a smaller mascot so the title and the buttons fit on the first screen */
+@media (max-width: 560px) {
+  .hero2-art .mascot { width: min(200px, 54%); }
+  .hero2-art .rug { scale: .6; }
+  .hero2-grid { padding-top: 14px; gap: 0; }
+  .hero2-copy .lede { margin-block: 10px 14px; }
+}
 .twinkles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .tw { position: absolute; width: 22px; animation: twinkle 2.8s ease-in-out infinite; }
 .tw0 { left: 20%; top: 8%; } .tw1 { right: 22%; top: -1%; width: 16px; animation-delay: -.8s; } .tw2 { right: 0; top: 42%; width: 26px; animation-delay: -1.6s; }
@@ -298,15 +305,16 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .vit-sand { position: absolute; left: 0; right: 0; top: 0; height: 20px; border-block: 3px solid var(--zt-edge); background: radial-gradient(rgb(150 100 50 / .35) 1.2px, transparent 1.6px) 0 0 / 11px 7px, linear-gradient(#F3CF95, #E2B072); }
 .vit-star { position: absolute; left: 84%; top: -9px; width: 24px; rotate: -14deg; }
 .vit-shell { position: absolute; left: 91%; top: -5px; width: 21px; rotate: 10deg; }
-.vit-sea { position: absolute; left: 0; right: 0; top: 20px; bottom: 0; overflow: hidden; background: linear-gradient(#59C9F5, #2FA6E0); }
+/* not clipped: the boat's sail rises over the sand; the front wave (z 2) still covers the hull */
+.vit-sea { position: absolute; left: 0; right: 0; top: 20px; bottom: 0; background: linear-gradient(#59C9F5, #2FA6E0); }
 .sea-back, .sea-front { position: absolute; left: 0; right: 0; background-repeat: repeat-x; }
 .sea-back { top: -2px; height: 18px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 18'%3E%3Cpath d='M0 9 q20 -12 40 0 t40 0 V18 H0Z' fill='%2389DCFF'/%3E%3Cpath d='M0 9 q20 -12 40 0 t40 0' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' opacity='.7'/%3E%3C/svg%3E"); background-size: 80px 18px; animation: sea-x 7s linear infinite; }
-.sea-front { top: 12px; bottom: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 22'%3E%3Cpath d='M0 8 q14 -10 28 0 t28 0 V22 H0Z' fill='%233EC5FF'/%3E%3Cpath d='M0 8 q14 -10 28 0 t28 0' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='40' cy='15' r='1.6' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"); background-size: 56px 22px; animation: sea-x2 4.5s linear infinite; }
+.sea-front { z-index: 2; top: 12px; bottom: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 22'%3E%3Cpath d='M0 8 q14 -10 28 0 t28 0 V22 H0Z' fill='%233EC5FF'/%3E%3Cpath d='M0 8 q14 -10 28 0 t28 0' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='40' cy='15' r='1.6' fill='%23fff' opacity='.7'/%3E%3C/svg%3E"); background-size: 56px 22px; animation: sea-x2 4.5s linear infinite; }
 @keyframes sea-x { to { background-position: 80px 0; } }
 @keyframes sea-x2 { to { background-position: -56px 0; } }
-.vit-boat { position: absolute; left: 74%; top: -14px; z-index: 1; width: 36px; transform-origin: 50% 90%; animation: boat 3.2s ease-in-out infinite; }
+.vit-boat { position: absolute; left: 74%; top: -22px; z-index: 1; width: 36px; transform-origin: 50% 90%; animation: boat 3.2s ease-in-out infinite; }
 @keyframes boat { 0%, 100% { translate: 0 0; rotate: -5deg; } 50% { translate: 0 3px; rotate: 5deg; } }
-.sea-spark { position: absolute; z-index: 2; width: 8px; height: 8px; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: twinkle 2.4s ease-in-out infinite; }
+.sea-spark { position: absolute; z-index: 3; width: 8px; height: 8px; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: twinkle 2.4s ease-in-out infinite; }
 .sea-spark.s1 { left: 18%; top: 14px; } .sea-spark.s2 { left: 47%; top: 20px; animation-delay: -.9s; } .sea-spark.s3 { left: 86%; top: 13px; animation-delay: -1.6s; }
 @media (max-width: 640px) {
   .vit { padding: 60px 12px 52px; border-radius: 26px; }
@@ -335,18 +343,22 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .j-icon { position: absolute; top: -36px; left: 50%; translate: -50% 0; width: 72px; height: 72px; border-radius: 50%; background: var(--zt-surface); border: 3px solid var(--zt-edge); display: grid; place-items: center; box-shadow: 0 4px 0 var(--zt-edge); }
 .j-icon svg { width: 46px; height: 46px; }
 .j-check { color: var(--zt-success); display: grid; } .j-check svg { width: 40px; height: 40px; }
-/* Zoy waits at home: peeks over the last card's corner */
-.j-zoy { position: absolute; right: -8px; top: -50px; width: 74px; rotate: 14deg; animation: zoy-nod 4s ease-in-out infinite; }
-@keyframes zoy-nod { 0%, 100% { rotate: 14deg; } 50% { rotate: 4deg; } }
+/* Zoy waits at home: stands behind the last card and looks over its top edge (the window clips the
+   neck exactly at the card's border, so it reads as "behind", never as a cut-off head) */
+.j-peek { position: absolute; right: 22px; top: -58px; width: 70px; height: 59px; overflow: hidden; pointer-events: none; }
+.j-zoy { position: absolute; left: 6px; top: 4px; width: 58px; transform-origin: 50% 100%; animation: zoy-nod 4s ease-in-out infinite; }
+@keyframes zoy-nod { 0%, 100% { rotate: 6deg; translate: 0 0; } 50% { rotate: -4deg; translate: 0 3px; } }
 @media (max-width: 860px) { .j-route { display: none; } .j-steps { margin-top: 50px; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 58px; } }
 @media (max-width: 480px) { .j-steps { grid-template-columns: 1fr; } }
 
 /* ---------- how we check ---------- */
 .steps { gap: 26px; }
-.step { position: relative; padding: 34px 24px 24px; display: grid; gap: 10px; align-content: start; background: var(--zt-surface); border: 3px solid var(--zt-edge); border-radius: 24px; box-shadow: 0 7px 0 var(--zt-edge); }
+.step { position: relative; padding: 34px 24px 24px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 14px; row-gap: 12px; align-content: start; background: var(--zt-surface); border: 3px solid var(--zt-edge); border-radius: 24px; box-shadow: 0 7px 0 var(--zt-edge); }
 .step:nth-child(1) { rotate: -1.5deg; } .step:nth-child(3) { rotate: 1.5deg; }
 .step-num { position: absolute; top: -20px; left: 22px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--zt-cta); color: #fff; font-weight: 900; font-size: 19px; border: 3px solid var(--zt-edge); }
 .step-icon { width: 56px; height: 56px; border-radius: 16px; transition: rotate .4s var(--zt-spring); }
+.step h3 { margin: 0; }
+.step p { grid-column: 1 / -1; margin: 0; }
 .step:hover .step-icon { rotate: -10deg; }
 
 /* ---------- honest numbers ---------- */

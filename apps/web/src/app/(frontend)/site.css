@@ -99,7 +99,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .lang { display: flex; border: 2px solid var(--zt-edge); border-radius: 999px; overflow: hidden; background: var(--zt-surface); }
 .lang a { padding: 6px 10px; font-size: 13px; font-weight: 700; text-decoration: none; color: var(--zt-ink-soft); }
 .lang a[aria-current="true"] { background: var(--zt-grape); color: var(--zt-on-grape); }
-@media (max-width: 420px) { .lang a { padding: 6px 7px; } .logo small { display: none; } .top-actions .zt-icon-btn[aria-pressed] { display: none; } }
+/* small phones: the dark-mode switch stays (sound is the one that goes), buttons and the language pill get tighter */
+@media (max-width: 420px) { .lang a { padding: 6px 7px; } .logo small { display: none; } .top-actions { gap: 6px; } .top-actions .zt-icon-btn[aria-pressed]:not(.theme-btn) { display: none; } }
+@media (max-width: 380px) { .lang a { padding: 6px 5px; font-size: 12px; } .top-actions .zt-icon-btn { width: 40px; height: 40px; } .logo { font-size: 18px; } }
 .cart-count { position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 999px; background: var(--zt-bubble); color: var(--zt-on-accent); border: 2px solid var(--zt-edge); font-size: 12px; font-weight: 900; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .bump { animation: bump 420ms var(--zt-spring); }
 @keyframes bump { 35% { transform: scale(1.25) rotate(-6deg); } }
@@ -295,7 +297,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .play-bubble { display: grid; place-items: center; width: 54px; height: 54px; margin-top: -28px; border-radius: 50%; background: var(--zt-sun); color: #1F1A3D; border: 2px solid var(--zt-edge); box-shadow: 0 4px 0 var(--zt-edge); transition: transform var(--zt-dur-fast) var(--zt-spring); }
 .tabbar .play-bubble svg { width: 30px; height: 30px; }
 .tab-play:active .play-bubble { transform: translateY(3px); box-shadow: 0 1px 0 var(--zt-edge); }
-.tab-count { position: absolute; top: 0; left: calc(50% + 6px); min-width: 18px; height: 18px; border-radius: 999px; background: var(--zt-bubble); color: #1F1A3D; border: 2px solid var(--zt-edge); font-size: 10px; display: grid; place-items: center; }
 @media (min-width: 861px) { .tabbar { display: none; } }
 .float-contact { display: none; position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 35; width: 56px; height: 56px; border-radius: 50%; place-items: center; background: #25D366; color: #0B2E17; border: 2px solid var(--zt-edge); box-shadow: 0 4px 0 var(--zt-edge); transition: transform var(--zt-dur-fast) var(--zt-spring); }
 .float-contact:hover { transform: translateY(-2px) rotate(-6deg); }
@@ -512,3 +513,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .foot-credit a { font-weight: 800; text-decoration: underline !important; text-decoration-style: wavy !important; text-underline-offset: 4px; text-decoration-color: var(--zt-sun) !important; }
 /* the floating chat button sits in the bottom-right corner — keep the last footer line clear of it */
 .foot-bottom { padding-right: 84px; }
+
+@media (max-width: 560px) {
+  .contact-hero .wrap > .contact-hero-art { position: absolute; right: 18px; top: 4px; width: 78px; padding: 0; }
+  .contact-hero-bubble { right: -12px; top: -14px; padding: 7px 9px; gap: 4px; }
+  .contact-hero-bubble i { width: 6px; height: 6px; }
+}

@@ -26,6 +26,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { AdminIcon as AdminIcon_db845eae23ef682757f9df5d4893ae70 } from '../../../components/admin/AdminBrand'
 import { AdminLogo as AdminLogo_db845eae23ef682757f9df5d4893ae70 } from '../../../components/admin/AdminBrand'
 import { NavExtra as NavExtra_3f818fd602cb12eebbbb3b1cb20e2503 } from '../../../components/admin/NavExtra'
+import { AdminLang as AdminLang_241acaa18a7ad5f16c70c4b8c8f08704 } from '../../../components/admin/AdminLang'
 import { AdminHome as AdminHome_c8ff13fb3ed15fa560b19524fa05fa91 } from '../../../components/admin/AdminHome'
 import { AdminTheme as AdminTheme_969f35f2f98dbf971e3275c489a5877e } from '../../../components/admin/AdminTheme'
 import { StoreSaleView as StoreSaleView_3e506b399d1ca59eb060225690d5a020 } from '../../../components/admin/StoreSaleView'
@@ -63,6 +64,7 @@ export const importMap = {
   "/components/admin/AdminBrand#AdminIcon": AdminIcon_db845eae23ef682757f9df5d4893ae70,
   "/components/admin/AdminBrand#AdminLogo": AdminLogo_db845eae23ef682757f9df5d4893ae70,
   "/components/admin/NavExtra#NavExtra": NavExtra_3f818fd602cb12eebbbb3b1cb20e2503,
+  "/components/admin/AdminLang#AdminLang": AdminLang_241acaa18a7ad5f16c70c4b8c8f08704,
   "/components/admin/AdminHome#AdminHome": AdminHome_c8ff13fb3ed15fa560b19524fa05fa91,
   "/components/admin/AdminTheme#AdminTheme": AdminTheme_969f35f2f98dbf971e3275c489a5877e,
   "/components/admin/StoreSaleView#StoreSaleView": StoreSaleView_3e506b399d1ca59eb060225690d5a020,

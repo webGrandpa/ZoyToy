@@ -4,6 +4,7 @@ import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { en } from '@payloadcms/translations/languages/en'
 import { ru } from '@payloadcms/translations/languages/ru'
 import { ka } from './i18n/admin/ka'
+import { kaLexical } from './i18n/admin/lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -47,7 +48,7 @@ export default buildConfig({
       providers: ['/components/admin/AdminTheme#AdminTheme'],
       // phone-first quick actions above the collection list (the owner runs the shop from a phone)
       beforeDashboard: ['/components/admin/AdminHome#AdminHome'],
-      afterNavLinks: ['/components/admin/NavExtra#NavExtra'],
+      afterNavLinks: ['/components/admin/NavExtra#NavExtra', '/components/admin/AdminLang#AdminLang'],
       // the counter (scan a label → sold) and printable QR labels — docs/04 „მაღაზიაში გაყიდვა“
       views: {
         storeSale: { Component: '/components/admin/StoreSaleView#StoreSaleView', path: '/store-sale', exact: true },
@@ -57,7 +58,8 @@ export default buildConfig({
   },
   // Admin UI languages: Georgian (our own translation, src/i18n/admin), Russian, English.
   // Payload's types list only built-in languages; the runtime accepts any key, so the Georgian pack is cast in.
-  i18n: { supportedLanguages: { ka, ru, en } as never, fallbackLanguage: 'ka' as never },
+  // `translations.ka.lexical`: the rich-text editor's own strings in Georgian (i18n/admin/lexical.ts)
+  i18n: { supportedLanguages: { ka, ru, en } as never, fallbackLanguage: 'ka' as never, translations: { ka: { lexical: kaLexical } } as never },
   // Content languages: every text the customer sees exists in ka / ru / en.
   localization: {
     locales: LOCALES.map((code) => ({ code, label: { ka: 'ქართული', ru: 'Русский', en: 'English' }[code] })),

@@ -262,3 +262,69 @@ html[data-theme="dark"] .zt-sale__item, html[data-theme="dark"] .zt-sale__today,
   .zt-sheet--roll .zt-label { break-after: page; page-break-after: always; }
   .zt-label { break-inside: avoid; }
 }
+
+/* ---------- admin language (side menu + dashboard) ---------- */
+.zt-alang { display: grid; gap: 6px; margin-top: 14px; }
+.zt-alang__label { font-size: 12px; font-weight: 700; opacity: .7; }
+.zt-alang__seg { display: inline-flex; width: max-content; padding: 3px; gap: 2px; border-radius: 999px; border: 2px solid #1F1A3D; background: var(--theme-elevation-0); }
+.zt-alang__seg button { min-width: 44px; padding: 6px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--theme-text); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.zt-alang__seg button[aria-pressed="true"] { background: #6B4EFF; color: #fff; }
+.zt-alang__seg button:disabled { opacity: .6; cursor: wait; }
+.zt-alang--compact { margin: 0 0 0 auto; }
+html[data-theme="dark"] .zt-alang__seg { border-color: #07051A; }
+
+/* ---------- calmer, compact edit forms (documents and settings) ----------
+   The fields sit on a white card of readable width instead of stretching across the screen; short
+   values (numbers, dates, choices) get short boxes; inputs are rounded with a clear focus ring. */
+.document-fields__main { background: var(--theme-elevation-50); }
+.document-fields__edit { padding-top: 22px; padding-bottom: 48px; }
+.document-fields__edit > .render-fields {
+  --spacing-field: 18px;
+  max-width: 880px; padding: 22px 24px 26px; border-radius: 20px; overflow-x: clip; /* tabs' divider stays inside; dropdowns still open downwards */
+  background: var(--theme-elevation-0); border: 1px solid var(--theme-elevation-150); box-shadow: 0 3px 0 var(--theme-elevation-100);
+}
+.document-fields .render-fields { --spacing-field: 18px; }
+.document-fields .field-label:not(.unstyled) { font-weight: 700; margin-bottom: 4px; }
+.document-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.document-fields textarea,
+.document-fields .rs__control {
+  border-radius: 12px !important; border: 1.5px solid var(--theme-elevation-150) !important; box-shadow: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.document-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+.document-fields textarea:hover, .document-fields .rs__control:hover { border-color: var(--theme-elevation-300) !important; }
+.document-fields input:not([type="checkbox"]):not([type="radio"]):focus,
+.document-fields textarea:focus, .document-fields .rs__control--is-focused {
+  border-color: #6B4EFF !important; box-shadow: 0 0 0 3px rgb(107 78 255 / .16) !important; outline: none;
+}
+.document-fields input[readonly], .document-fields input:disabled { background: var(--theme-elevation-50) !important; }
+/* the hidden search input inside dropdowns must not get a box of its own */
+.document-fields .rs__control input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; min-height: 0 !important; background: transparent !important; }
+/* tabs live inside the card: their divider runs from edge to edge of the card, not past it */
+.document-fields__edit > .render-fields > .tabs-field { --gutter-h: 24px; margin-top: 0; }
+.document-fields__edit > .render-fields > .tabs-field .tabs-field__tabs { padding-inline: 18px; box-sizing: border-box; }
+/* short values, short boxes (inside rows the row decides) */
+.document-fields .render-fields:not(.row__fields) > .field-type.number,
+.document-fields .render-fields:not(.row__fields) > .field-type.date { max-width: 280px; }
+.document-fields .render-fields:not(.row__fields) > .field-type.select,
+.document-fields .render-fields:not(.row__fields) > .field-type.email { max-width: 440px; }
+.document-fields .render-fields:not(.row__fields) > .field-type.text { max-width: 620px; }
+.document-fields__sidebar .render-fields > .field-type { max-width: none; }
+/* tabs as soft pills */
+.tabs-field__tab-button { border-radius: 999px !important; padding: 7px 14px !important; margin-right: 4px; transition: background .15s ease; }
+.tabs-field__tab-button:hover { background: var(--theme-elevation-50); }
+.tabs-field__tab-button--active { background: #EFEAFF; color: #4B32D6 !important; }
+html[data-theme="dark"] .tabs-field__tab-button--active { background: rgb(107 78 255 / .25); color: #CFC4FF !important; }
+/* arrays (photos, order items, stock) as tidy rows */
+.document-fields .array-field__row, .document-fields .collapsible { border-radius: 14px; }
+@media (max-width: 768px) {
+  .document-fields__edit { padding-top: 12px; }
+  .document-fields__edit > .render-fields { padding: 14px 12px 18px; border-radius: 16px; }
+  .document-fields__edit > .render-fields > .tabs-field { --gutter-h: 12px; }
+  .document-fields__edit > .render-fields > .tabs-field .tabs-field__tabs { padding-inline: 6px; }
+  .document-fields .render-fields:not(.row__fields) > .field-type.number,
+  .document-fields .render-fields:not(.row__fields) > .field-type.date,
+  .document-fields .render-fields:not(.row__fields) > .field-type.select,
+  .document-fields .render-fields:not(.row__fields) > .field-type.email,
+  .document-fields .render-fields:not(.row__fields) > .field-type.text { max-width: none; }
+}

@@ -120,8 +120,9 @@ export const part2 = {
     light: 'ნათელი',
     livePreview: 'ცოცხალი გადახედვა',
     loading: 'იტვირთება',
-    locale: 'ენა',
-    locales: 'ენები',
+    // the content language (which version of a text is being edited), not the admin's own language
+    locale: 'შინაარსის ენა',
+    locales: 'შინაარსის ენები',
     lock: 'დაბლოკვა',
     menu: 'მენიუ',
     moreOptions: 'მეტი მოქმედება',

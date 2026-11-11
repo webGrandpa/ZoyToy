@@ -279,6 +279,7 @@ export const Orders: CollectionConfig = {
       name: 'items',
       type: 'array',
       label: L('ნივთები', 'Товары', 'Items'),
+      labels: { singular: L('ნივთი', 'Товар', 'Item'), plural: L('ნივთები', 'Товары', 'Items') },
       fields: [
         {
           type: 'row',
@@ -294,9 +295,9 @@ export const Orders: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'total', type: 'number', label: L('ჯამი ₾', 'Итого ₾', 'Total ₾') },
-        { name: 'discountPercent', type: 'number', min: 0, max: 100, label: L('ჯილდოს ფასდაკლება %', 'Скидка по награде %', 'Reward discount %'), admin: { readOnly: true, condition: (d) => Boolean(d?.discountPercent) } },
-        { name: 'payable', type: 'number', label: L('გადასახდელი ₾ (ფასდაკლებით)', 'К оплате ₾ (со скидкой)', 'To pay ₾ (discounted)'), admin: { condition: (d) => d?.payable != null } },
+        { name: 'total', type: 'number', label: L('ჯამი ₾', 'Итого ₾', 'Total ₾'), admin: { width: '33%' } },
+        { name: 'discountPercent', type: 'number', min: 0, max: 100, label: L('ჯილდოს ფასდაკლება %', 'Скидка по награде %', 'Reward discount %'), admin: { width: '33%', readOnly: true, condition: (d) => Boolean(d?.discountPercent) } },
+        { name: 'payable', type: 'number', label: L('გადასახდელი ₾ (ფასდაკლებით)', 'К оплате ₾ (со скидкой)', 'To pay ₾ (discounted)'), admin: { width: '33%', condition: (d) => d?.payable != null } },
       ],
     },
     {

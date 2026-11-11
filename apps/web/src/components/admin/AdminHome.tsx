@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { saleTotals, shopDayStart } from '../../lib/store'
+import { AdminLang } from './AdminLang'
 
 type Lang = 'ka' | 'ru' | 'en'
 type Props = { payload: Payload; i18n?: { language?: string }; user?: { email?: string | null } | null }
@@ -82,6 +83,7 @@ export async function AdminHome({ payload, i18n }: Props) {
       <div className="zt-home__hello">
         <GiraffeHead className="zt-home__zoy" />
         <p>{t.hello}</p>
+        <AdminLang compact />
       </div>
       <div className="zt-home__tiles">
         <a className="zt-tile zt-tile--new" href={`${admin}/collections/products/create`}>

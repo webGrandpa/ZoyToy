@@ -458,6 +458,21 @@ export const BOUQUETS: Record<Theme, (() => React.JSX.Element)[]> = {
   outdoor: [Frisbee, Kite, toy('ball'), Bucket, Spade, Scooter],
 }
 
+/**
+ * The toy that peeks out of the closed box — one per theme, so two shelves that share an admin icon
+ * (building and learning both use "blocks") still look different before the bouquet opens.
+ */
+export const HERO: Record<Theme, () => React.JSX.Element> = {
+  soft: toy('teddy'),
+  build: toy('blocks'),
+  vehicles: toy('car'),
+  figures: Robot,
+  games: toy('puzzle'),
+  learn: Abacus,
+  baby: toy('duck'),
+  outdoor: toy('ball'),
+}
+
 const BY_SLUG: [RegExp, Theme][] = [
   [/soft|plush|teddy|rbil/i, 'soft'],
   [/build|lego|constr|block/i, 'build'],

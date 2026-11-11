@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
+import type { ToyKind } from '@zoytoy/ui/ToyArt'
 import type { Accent } from '../../lib/data'
-import { BOUQUETS, themeFor } from './Bouquet'
+import { BOUQUETS, HERO, themeFor } from './Bouquet'
 
 type Cat = { id: number; title: string; slug: string; color: Accent; icon: ToyKind }
 
@@ -27,25 +27,45 @@ const FAN = [
 export function CategoryBoxes({ locale, items }: { locale: string; items: Cat[] }) {
   return (
     <div className="boxes">
-      {items.map((c, i) => (
-        <Link key={c.id} href={`/${locale}/shop?c=${c.slug}`} className={`tbox tint-${c.color}`} style={{ ['--i' as string]: i }}>
-          <span className="tbox-lid" aria-hidden="true" />
-          <span className="tbox-in" aria-hidden="true" />
-          <span className="tbox-bouquet" aria-hidden="true">
-            {BOUQUETS[themeFor(c.slug, c.icon)].map((Art, j) => (
-              <span key={j} className="tbox-b" style={{ ['--a' as string]: `${FAN[j].a}deg`, ['--r' as string]: `${FAN[j].r}px`, ['--j' as string]: j, zIndex: FAN[j].z }}>
-                <Art />
-              </span>
-            ))}
-          </span>
-          <span className="tbox-toy" aria-hidden="true"><ToyArt kind={c.icon} /></span>
-          <span className="tbox-front">
-            <span className="tbox-rim" aria-hidden="true" />
-            <span className="tbox-dots" aria-hidden="true" />
-            <b>{c.title}</b>
-          </span>
-        </Link>
-      ))}
+      {items.map((c, i) => {
+        const theme = themeFor(c.slug, c.icon)
+        const Hero = HERO[theme]
+        return (
+          <Link
+            key={c.id}
+            href={`/${locale}/shop?c=${c.slug}`}
+            className={`tbox tint-${c.color}`}
+            style={{ ['--i' as string]: i }}
+          >
+            <span className="tbox-lid" aria-hidden="true" />
+            <span className="tbox-in" aria-hidden="true" />
+            <span className="tbox-bouquet" aria-hidden="true">
+              {BOUQUETS[theme].map((Art, j) => (
+                <span
+                  key={j}
+                  className="tbox-b"
+                  style={{
+                    ['--a' as string]: `${FAN[j].a}deg`,
+                    ['--r' as string]: `${FAN[j].r}px`,
+                    ['--j' as string]: j,
+                    zIndex: FAN[j].z,
+                  }}
+                >
+                  <Art />
+                </span>
+              ))}
+            </span>
+            <span className="tbox-toy" aria-hidden="true">
+              <Hero />
+            </span>
+            <span className="tbox-front">
+              <span className="tbox-rim" aria-hidden="true" />
+              <span className="tbox-dots" aria-hidden="true" />
+              <b>{c.title}</b>
+            </span>
+          </Link>
+        )
+      })}
     </div>
   )
 }

@@ -37,7 +37,10 @@
 
 ## 3. განახლება
 
-- რეპოს ფესვიდან: `vercel deploy --prod` (ან GitHub-თან დაკავშირების შემდეგ — ყოველი push `main`-ზე).
+- **თავისით:** ყოველი push `main`-ზე (GitHub `webGrandpa/ZoyToy`, დაკავშირებულია Vercel-თან) ~3 წუთში საიტზე ჩანს.
+  ხელით, საჭიროების შემთხვევაში: რეპოს ფესვიდან `vercel deploy --prod`.
+- **შინაარსი:** ადმინში შენახული ცვლილება (ნივთი, კატეგორია, ფოტო, ფილიალი, კამპანია, საიტის პარამეტრები)
+  მაღაზიის გვერდებზე მაშინვე ჩანს — ქეშირებულ გვერდებს ჰუკი აახლებს (`apps/web/src/lib/refresh.ts`).
 - Build: `apps/web/scripts/vercel-build.sh` — ჯერ ბაზის მიგრაციები, მერე Next.js (`NODE_ENV=production`).
 - იტვირთება მხოლოდ `.vercelignore`-ით დაშვებული: `apps/`, `packages/`, ფესვის package/lock/workspace ფაილები.
   `.env`, `media/`, ტესტები და build-ის ნარჩენები — არასდროს.

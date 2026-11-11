@@ -21,6 +21,7 @@ import { Orders } from './collections/Orders'
 import { GameCampaigns, GameSessions, Rewards } from './collections/Games'
 import { SiteSettings } from './globals/SiteSettings'
 import { LOCALES, DEFAULT_LOCALE } from './i18n/config'
+import { withGlobalRefresh, withRefresh } from './lib/refresh'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -55,8 +56,16 @@ export default buildConfig({
     defaultLocale: DEFAULT_LOCALE,
     fallback: true,
   },
-  collections: [Orders, Products, Categories, Franchises, Brands, Tags, Media, Locations, GameCampaigns, Rewards, GameSessions, Users],
-  globals: [SiteSettings],
+  // everything the storefront shows refreshes the cached pages on save (lib/refresh.ts); orders reach
+  // the shop through the products they reserve, so they need no hook of their own
+  collections: [
+    Orders,
+    ...[Products, Categories, Franchises, Brands, Tags, Media, Locations, GameCampaigns].map(withRefresh),
+    Rewards,
+    GameSessions,
+    Users,
+  ],
+  globals: [withGlobalRefresh(SiteSettings)],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },

@@ -27,8 +27,9 @@ test.describe('Admin Panel', () => {
 
   test('can navigate to list view', async () => {
     await page.goto('http://localhost:3000/admin/collections/users')
-    await expect(page).toHaveURL('http://localhost:3000/admin/collections/users')
-    const listViewArtifact = page.locator('h1', { hasText: 'Users' }).first()
+    await expect(page).toHaveURL(/\/admin\/collections\/users(\?|$)/)
+    // the heading follows the admin language (თანამშრომლები / Сотрудники / Team) — any list heading will do
+    const listViewArtifact = page.locator('.collection-list h1, .list-header h1, h1').first()
     await expect(listViewArtifact).toBeVisible()
   })
 

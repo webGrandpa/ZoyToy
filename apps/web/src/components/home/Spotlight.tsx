@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
-import { money, type Messages } from '../../i18n'
+import type { Messages } from '../../i18n'
+import { money } from '../../i18n/format'
 import type { CardVM } from '../../lib/data'
 import { ConditionBadge } from '../Condition'
 
@@ -11,7 +12,7 @@ export function Spotlight({ locale, m, p }: { locale: string; m: Messages; p: Ca
     <div className={`spot tint-${p.color}`}>
       <div className="spot-art">
         <div className="sunburst" aria-hidden="true" />
-        {p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="(max-width: 860px) 80vw, 480px" alt={p.image.alt || p.title} /> : <ToyArt kind={p.art} />}
+        {p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="(max-width: 860px) 80vw, 480px" alt={p.image.alt || p.title} loading="lazy" decoding="async" /> : <ToyArt kind={p.art} />}
         <div className="spot-tag" aria-hidden="true">
           <span>{money(p.price)}</span>
         </div>

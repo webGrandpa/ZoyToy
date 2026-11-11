@@ -1,5 +1,6 @@
 import * as migration_20261111_090618_initial from './20261111_090618_initial';
 import * as migration_20261111_110818_telegram from './20261111_110818_telegram';
+import * as migration_20261111_135841_store_sales_contacts_audit from './20261111_135841_store_sales_contacts_audit';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20261111_110818_telegram.up,
     down: migration_20261111_110818_telegram.down,
-    name: '20261111_110818_telegram'
+    name: '20261111_110818_telegram',
+  },
+  {
+    up: migration_20261111_135841_store_sales_contacts_audit.up,
+    down: migration_20261111_135841_store_sales_contacts_audit.down,
+    name: '20261111_135841_store_sales_contacts_audit'
   },
 ];

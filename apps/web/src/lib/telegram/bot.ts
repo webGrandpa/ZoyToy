@@ -14,6 +14,7 @@ import {
   canMove,
   customerMessage,
   digestCard,
+  esc,
   HELP,
   openOrdersCard,
   orderCard,
@@ -30,18 +31,14 @@ import {
   type RewardData,
 } from './cards'
 import { signLink } from './secret'
-import { asLang, intlPhone, type Lang } from './templates'
+import { asLang, intlPhone, money, type Lang } from './templates'
+import { siteUrl } from '../site'
+import { saleTotals } from '../store'
 
 const OPEN = ['requested', 'confirmed', 'paid', 'shipped']
 const DAY = 24 * 3600 * 1000
 
-/** Public https address of the site, for links in messages (Telegram refuses localhost links). */
-export function siteUrl() {
-  const own = process.env.SITE_URL?.trim().replace(/\/$/, '')
-  if (own?.startsWith('https://')) return own
-  const host = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
-  return host ? `https://${host}` : null
-}
+export { siteUrl }
 
 /** Runs after the response is sent (Next.js `after`), or right away outside a request (scripts, tests). */
 export function inBackground(task: () => Promise<unknown>, onError: (e: unknown) => void) {
@@ -123,6 +120,19 @@ export async function notifyNewOrder(payload: Payload, order: Order) {
     }
   }
   await send(chat, c.text, c.keyboard)
+}
+
+/**
+ * An item that an unpaid online request was holding got sold at the counter — the owner has to tell
+ * that customer. The order's card follows with its usual buttons (WhatsApp, cancel…).
+ */
+export async function notifyStoreSaleConflict(payload: Payload, sale: { sku?: string | null; title?: string | null }, order: Order) {
+  if (!botToken()) return
+  const chat = await ownerChat(payload)
+  if (!chat) return
+  const c = await card(payload, order)
+  const head = `⚠️ <b>${esc(sale.sku ?? '')}</b> ${esc(sale.title ?? '')} — გაიყიდა მაღაზიაში, მაგრამ შეკვეთა <b>${esc(order.number ?? `#${order.id}`)}</b>-ში იყო დაჯავშნილი. მყიდველს აცნობე.`
+  await send(chat, `${head}\n\n${c.text}`, c.keyboard)
 }
 
 /** Redraws a card in place — caption for photo messages, text otherwise. */
@@ -277,7 +287,7 @@ export async function sendDigest(payload: Payload, opts: { force?: boolean; now?
   const since = new Date(now.getTime() - DAY).toISOString()
   const list = (status: string) => payload.find({ collection: 'orders', where: { status: { equals: status } }, sort: 'createdAt', limit: 30, depth: 0, overrideAccess: true })
   const count = (collection: 'orders' | 'rewards', where: object) => payload.count({ collection, where: where as never, overrideAccess: true })
-  const [requested, confirmed, paid, newOrders, newRewards, published, reserved] = await Promise.all([
+  const [requested, confirmed, paid, newOrders, newRewards, published, reserved, storeSales] = await Promise.all([
     list('requested'),
     list('confirmed'),
     list('paid'),
@@ -285,12 +295,14 @@ export async function sendDigest(payload: Payload, opts: { force?: boolean; now?
     count('rewards', { createdAt: { greater_than: since } }),
     payload.count({ collection: 'products', where: { status: { equals: 'published' } }, overrideAccess: true }),
     payload.count({ collection: 'products', where: { status: { equals: 'reserved' } }, overrideAccess: true }),
+    payload.find({ collection: 'store-sales', where: { createdAt: { greater_than: since } }, limit: 500, depth: 0, pagination: false, select: { price: true, payment: true }, overrideAccess: true }),
   ])
+  const store = saleTotals(storeSales.docs)
   const c = digestCard({
     requested: requested.docs as ListedOrder[],
     confirmed: confirmed.docs as ListedOrder[],
     toShip: paid.docs as ListedOrder[],
-    last24h: { orders: newOrders.totalDocs, rewards: newRewards.totalDocs },
+    last24h: { orders: newOrders.totalDocs, rewards: newRewards.totalDocs, storeSales: store.count, storeSum: money(store.sum, 'ka') },
     shelf: { published: published.totalDocs, reserved: reserved.totalDocs },
     now,
   })

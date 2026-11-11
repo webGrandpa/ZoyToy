@@ -1,5 +1,5 @@
 import type { Field, GlobalConfig } from 'payload'
-import { anyone, isAdmin } from '../lib/access'
+import { anyone, isAdmin, isTeamField } from '../lib/access'
 import { L } from '../lib/labels'
 import { GAME_IDS } from '@zoytoy/games/catalog'
 import { asLang, DEFAULT_TEMPLATES, PLACEHOLDERS, TEMPLATE_FIELD, TEMPLATE_KEYS, TEMPLATE_LABEL } from '../lib/telegram/templates'
@@ -31,10 +31,19 @@ export const SiteSettings: GlobalConfig = {
             { name: 'phone', type: 'text', label: L('ტელეფონი', 'Телефон', 'Phone') },
             { name: 'whatsapp', type: 'text', label: 'WhatsApp', admin: { description: L('ნომერი საერთაშორისო ფორმატში, მაგ. 9955XXXXXXXX', 'Номер в международном формате, напр. 9955XXXXXXXX', 'International format, e.g. 9955XXXXXXXX') } },
             { name: 'telegram', type: 'text', label: 'Telegram', admin: { description: L('მომხმარებლის სახელი @-ის გარეშე', 'Имя пользователя без @', 'Username without @') } },
-            { name: 'instagram', type: 'text', defaultValue: 'zoy.toy', label: 'Instagram' },
-            { name: 'facebook', type: 'text', label: 'Facebook (URL)' },
-            { name: 'tiktok', type: 'text', label: 'TikTok' },
+            { name: 'viber', type: 'text', label: 'Viber', admin: { description: L('ნომერი საერთაშორისო ფორმატში, მაგ. 9955XXXXXXXX', 'Номер в международном формате, напр. 9955XXXXXXXX', 'International format, e.g. 9955XXXXXXXX') } },
             { name: 'email', type: 'email', label: L('ელფოსტა', 'Эл. почта', 'Email') },
+            {
+              type: 'collapsible',
+              label: L('სოციალური ქსელები', 'Соцсети', 'Social networks'),
+              admin: { description: L('ჩაწერე ბმული ან სახელი (@-ით ან მის გარეშე). საიტზე ჩანს მხოლოდ შევსებული — ფუტერში და „კონტაქტის“ გვერდზე.', 'Ссылка или имя (с @ или без). На сайте видны только заполненные — в подвале и на странице «Контакты».', 'A link or a handle (with or without @). Only the filled ones show on the site — footer and the Contact page.') },
+              fields: [
+                { name: 'instagram', type: 'text', defaultValue: 'zoy.toy', label: 'Instagram' },
+                { name: 'facebook', type: 'text', label: 'Facebook' },
+                { name: 'tiktok', type: 'text', label: 'TikTok' },
+                { name: 'youtube', type: 'text', label: 'YouTube' },
+              ],
+            },
             { name: 'hours', type: 'text', localized: true, label: L('სამუშაო საათები', 'Часы работы', 'Opening hours') },
           ],
         },
@@ -95,6 +104,8 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'telegramChatId',
               type: 'text',
+              // the owner's private chat id is nobody else's business — the bot reads it with overrideAccess
+              access: { read: isTeamField },
               label: L('ჩატის ნომერი', 'Номер чата', 'Chat ID'),
               validate: (value: unknown, { req }: { req: { i18n?: { language?: string } } }) =>
                 !value || /^-?\d{5,20}$/.test(String(value).trim()) || chatIdError[asLang(req.i18n?.language)],
@@ -106,8 +117,8 @@ export const SiteSettings: GlobalConfig = {
                 ),
               },
             },
-            { name: 'telegramDigest', type: 'checkbox', defaultValue: true, label: L('დილის შეჯამება ყოველდღე 10:00-ზე', 'Утренняя сводка каждый день в 10:00', 'Morning digest every day at 10:00') },
-            { name: 'telegramDigestAt', type: 'date', admin: { hidden: true } },
+            { name: 'telegramDigest', type: 'checkbox', defaultValue: true, access: { read: isTeamField }, label: L('დილის შეჯამება ყოველდღე 10:00-ზე', 'Утренняя сводка каждый день в 10:00', 'Morning digest every day at 10:00') },
+            { name: 'telegramDigestAt', type: 'date', access: { read: isTeamField }, admin: { hidden: true } },
           ],
         },
         {

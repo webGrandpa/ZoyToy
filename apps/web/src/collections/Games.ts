@@ -1,5 +1,8 @@
 import crypto from 'crypto'
 import type { CollectionConfig, Endpoint, Payload } from 'payload'
+import type { PostgresAdapter } from '@payloadcms/db-postgres'
+import { sql } from '@payloadcms/db-postgres'
+import { shopDayStart } from '../lib/store'
 import { tierFor, type Tier } from '@zoytoy/games/toy-drop'
 import { GAME_IDS, isGameId, verifyRound, type GameId } from '@zoytoy/games/catalog'
 import { anyone, isAdmin, isTeam } from '../lib/access'
@@ -9,10 +12,14 @@ const GLOBAL_MAX_PERCENT = 50
 const sign = (id: number | string, seed: number) => crypto.createHmac('sha256', process.env.PAYLOAD_SECRET || 'dev').update(`${id}:${seed}`).digest('hex').slice(0, 32)
 const hashIp = (ip: string) => crypto.createHash('sha256').update(`${ip}:${process.env.PAYLOAD_SECRET || ''}`).digest('hex').slice(0, 16)
 const ipOf = (h: Headers) => h.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
-const startOfToday = () => {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
+/** Daily attempts reset at midnight in Batumi, not at the server's UTC midnight. */
+const startOfToday = () => shopDayStart().toISOString()
+
+/** Takes the round for checking exactly once: of two /finish calls for one session, only one gets through. */
+async function claimRound(payload: Payload, id: number) {
+  const db = (payload.db as unknown as PostgresAdapter).drizzle
+  const res = await db.execute(sql`UPDATE "game_sessions" SET "finished_at" = now() WHERE "id" = ${id} AND "verdict" = 'playing' AND "finished_at" IS NULL RETURNING "id"`)
+  return ((res as { rows?: unknown[] }).rows ?? []).length === 1
 }
 
 /** Games the owner switched on in Site settings → Games (empty = all of them). */
@@ -96,6 +103,7 @@ const finish: Endpoint = {
     const session = await req.payload.findByID({ collection: 'game-sessions', id, overrideAccess: true, depth: 0 }).catch(() => null)
     if (!session || session.verdict !== 'playing') return Response.json({ error: 'used' }, { status: 409 })
     if (sign(id, session.seed) !== body.token) return Response.json({ error: 'token' }, { status: 403 })
+    if (!(await claimRound(req.payload, id))) return Response.json({ error: 'used' }, { status: 409 })
 
     const elapsed = Date.now() - new Date(session.startedAt ?? session.createdAt).getTime()
     // replay the round with the same seed and the recorded moves — every game has its own rules (packages/games)
@@ -116,7 +124,8 @@ const finish: Endpoint = {
       overrideAccess: true,
       limit: 1,
       sort: '-percent',
-      where: { and: [{ campaign: { equals: campaign.id } }, { deviceId: { equals: session.deviceId } }, { status: { equals: 'issued' } }] },
+      // an expired code is not "kept" — a new good round earns a fresh one
+      where: { and: [{ campaign: { equals: campaign.id } }, { deviceId: { equals: session.deviceId } }, { status: { equals: 'issued' } }, { or: [{ expiresAt: { exists: false } }, { expiresAt: { greater_than: new Date().toISOString() } }] }] },
     })
     const best = existing.docs[0]
     if (best && best.percent >= percent) return Response.json({ score: result.score, verdict, percent: best.percent, code: best.code, expiresAt: best.expiresAt, kept: true })

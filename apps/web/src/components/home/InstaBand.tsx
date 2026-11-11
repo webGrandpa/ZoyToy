@@ -38,7 +38,7 @@ export function InstaBand({ m, href, items }: { m: Messages; href: string; items
           <span className="phone-grid">
             {items.slice(0, 9).map((p) => (
               <span key={p.id} className={`tint-${p.color}`}>
-                {p.image ? <img src={p.image.src} alt="" loading="lazy" /> : <ToyArt kind={p.art} />}
+                {p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="(max-width: 640px) 33vw, 180px" alt="" loading="lazy" decoding="async" /> : <ToyArt kind={p.art} />}
               </span>
             ))}
           </span>

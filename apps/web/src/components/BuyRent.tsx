@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { money } from '../i18n'
+import { money } from '../i18n/format'
 import type { ProductVM } from '../lib/data'
 import { contactLinks } from '../lib/contact'
 import type { SiteSetting } from '../payload-types'

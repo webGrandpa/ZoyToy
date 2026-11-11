@@ -1,11 +1,21 @@
-import type { CollectionAfterChangeHook, CollectionConfig, Endpoint, Payload } from 'payload'
+import crypto from 'crypto'
+import { APIError, commitTransaction, initTransaction, killTransaction, type CollectionBeforeChangeHook, type CollectionConfig, type Endpoint, type Payload } from 'payload'
+import type { Order, Product } from '../payload-types'
 import { isTeam } from '../lib/access'
 import { L } from '../lib/labels'
+import { HOLD, highestNumber, itemIds, lockNumbers, moveProducts, releaseItems, relId } from '../lib/stock'
 import { inBackground, notifyNewOrder } from '../lib/telegram/bot'
 
 const RESERVE_HOURS = 24
+/** One request holds at most this many toys — enough for a real basket, too few to empty the shelf. */
+export const MAX_ITEMS = 6
+/** Requests per network address per 24 h, and open (unanswered) requests per phone — counted in the database. */
+const MAX_PER_IP = 5
+const MAX_OPEN_PER_PHONE = 2
 const DELIVERY = ['pickup', 'courier', 'post', 'bus'] as const
 const PAYMENT = ['cash', 'transfer', 'link'] as const
+const round = (n: number) => Math.round(n * 100) / 100
+export const hashIp = (ip: string) => crypto.createHmac('sha256', process.env.PAYLOAD_SECRET || 'dev').update(`order-ip:${ip}`).digest('hex').slice(0, 16)
 
 /** Puts reserved items back on the shelf when a request was never confirmed (docs/08 §4). */
 export async function releaseExpired(payload: Payload) {
@@ -16,94 +26,173 @@ export async function releaseExpired(payload: Payload) {
     depth: 0,
     overrideAccess: true,
   })
+  let released = 0
   for (const o of expired.docs) {
-    await payload.update({ collection: 'orders', id: o.id, data: { status: 'expired' }, overrideAccess: true })
+    try {
+      // conditional: a request the owner confirmed a moment ago stays as it is
+      const res = await payload.update({ collection: 'orders', where: { and: [{ id: { equals: o.id } }, { status: { equals: 'requested' } }] }, data: { status: 'expired' }, overrideAccess: true })
+      released += res.docs.length
+      for (const e of res.errors ?? []) payload.logger.warn(`Expiring ${o.number} failed: ${e.message}`)
+    } catch (e) {
+      // one broken order must not stop the others, nor the customer request that triggered this
+      payload.logger.warn(`Expiring ${o.number} failed: ${String(e)}`)
+    }
   }
-  return expired.totalDocs
+  return released
 }
 
-/** Keep product status in step with the order: reserved → sold, or back on the shelf. */
-const syncProducts: CollectionAfterChangeHook = async ({ doc, previousDoc, req, operation }) => {
-  if (operation !== 'update' || doc.status === previousDoc?.status) return doc
-  const ids = (doc.items ?? []).map((i: { product?: number | { id: number } }) => (typeof i.product === 'object' ? i.product?.id : i.product)).filter(Boolean)
-  const next = ['paid', 'shipped', 'completed'].includes(doc.status) ? 'sold' : ['cancelled', 'expired'].includes(doc.status) ? 'published' : null
-  if (!next) return doc
-  for (const id of ids) {
-    const p = await req.payload.findByID({ collection: 'products', id, depth: 0, req, overrideAccess: true }).catch(() => null)
-    if (!p) continue
-    // only touch items this order is holding
-    if (next === 'published' && p.status !== 'reserved') continue
-    if (next === 'sold' && p.status === 'sold') continue
-    await req.payload.update({ collection: 'products', id, data: { status: next }, req, overrideAccess: true })
+/**
+ * Keeps the items in step with the order (docs/08 §3.2): an open request holds them `reserved`, a paid
+ * order `sold`; cancelled/expired lets them go unless another order holds them. Works for status
+ * changes, items added or removed by hand, and orders typed into the admin. Runs before the save, in
+ * the same transaction, so an item that is no longer free stops the save with a clear message.
+ */
+const syncItems: CollectionBeforeChangeHook<Order> = async ({ data, originalDoc, operation, req, context }) => {
+  if (context?.itemsClaimed) return data // POST /request reserved them already, atomically
+  const payload = req.payload
+  const prevStatus = operation === 'update' ? originalDoc?.status : undefined
+  const nextStatus = data.status ?? prevStatus ?? 'requested'
+  const before = prevStatus ? HOLD[prevStatus] : undefined
+  const after = HOLD[nextStatus]
+  const prevIds = operation === 'update' ? itemIds(originalDoc?.items) : []
+  const nextIds = data.items ? itemIds(data.items) : prevIds
+  const self = originalDoc?.id
+
+  const dropped = before ? (after ? prevIds.filter((id) => !nextIds.includes(id)) : prevIds) : []
+  if (dropped.length) await releaseItems(payload, req, dropped, before!, self)
+
+  if (after) {
+    const fresh = before ? nextIds.filter((id) => !prevIds.includes(id)) : nextIds
+    const kept = before ? nextIds.filter((id) => prevIds.includes(id)) : []
+    if (kept.length && before !== after) await moveProducts(payload, req, kept, [before!], after)
+    if (fresh.length) {
+      const got = await moveProducts(payload, req, fresh, ['published', 'draft'], after)
+      const missing = fresh.filter((id) => !got.includes(id))
+      if (missing.length) {
+        const items = data.items ?? originalDoc?.items ?? []
+        const names = missing.map((id) => items.find((i) => relId(i.product) === id)?.sku || `#${id}`).join(', ')
+        throw new APIError(`ნივთი აღარ არის თავისუფალი (სხვა შეკვეთაშია ან გაყიდულია): ${names}`, 409, null, true)
+      }
+    }
   }
-  return doc
+  // hand edits of the items keep the total right, unless the total was changed in the same save
+  if (operation === 'update' && data.items && (data.total == null || data.total === originalDoc?.total)) {
+    data.total = round(data.items.reduce((s, i) => s + Number(i.price ?? 0), 0))
+  }
+  return data
 }
 
-const hits = new Map<string, number[]>()
-function rateLimited(key: string, max = 5, windowMs = 10 * 60 * 1000) {
-  const now = Date.now()
-  const list = (hits.get(key) ?? []).filter((t) => now - t < windowMs)
-  list.push(now)
-  hits.set(key, list)
-  return list.length > max
+/** ZT-0001, ZT-0002… — under a lock, so two requests at the same moment can't take the same number. */
+const assignNumber: CollectionBeforeChangeHook<Order> = async ({ data, operation, req }) => {
+  if (operation !== 'create' || data.number) return data
+  await lockNumbers(req.payload, req, 'orders.number')
+  const n = (await highestNumber(req.payload, req, 'orders', 'number')) + 1
+  return { ...data, number: `ZT-${String(n).padStart(4, '0')}` }
+}
+
+/** A valid game reward lowers what the customer pays — only on the campaign's categories, if it names any. */
+async function rewardDiscount(payload: Payload, code: string, items: Product[]) {
+  if (!code) return null
+  const found = await payload.find({
+    collection: 'rewards',
+    where: { and: [{ code: { equals: code } }, { status: { equals: 'issued' } }, { or: [{ expiresAt: { exists: false } }, { expiresAt: { greater_than: new Date().toISOString() } }] }] },
+    limit: 1,
+    depth: 1,
+    overrideAccess: true,
+  })
+  const reward = found.docs[0]
+  if (!reward) return null
+  const campaign = reward.campaign && typeof reward.campaign === 'object' ? reward.campaign : null
+  const cats = (campaign?.categories ?? []).map(relId).filter(Boolean)
+  const eligible = cats.length ? items.filter((p) => (p.categories ?? []).some((c) => cats.includes(relId(c)))) : items
+  const base = eligible.reduce((s, p) => s + Number(p.price ?? 0), 0)
+  return { percent: reward.percent, amount: round((base * reward.percent) / 100) }
 }
 
 const requestEndpoint: Endpoint = {
   path: '/request',
   method: 'post',
   handler: async (req) => {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
-    if (rateLimited(ip)) return Response.json({ error: 'rate_limited' }, { status: 429 })
+    const payload = req.payload
+    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
     const body = (await req.json?.().catch(() => null)) as Record<string, unknown> | null
     if (!body) return Response.json({ error: 'bad_request' }, { status: 400 })
 
     const name = String(body.name ?? '').trim().slice(0, 80)
     const phone = String(body.phone ?? '').replace(/[^\d+]/g, '').slice(0, 16)
-    const ids = Array.isArray(body.items) ? body.items.map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20) : []
+    const raw = Array.isArray(body.items) ? body.items.map(Number).filter((n) => Number.isInteger(n) && n > 0) : []
+    const ids = [...new Set(raw)]
     const delivery = DELIVERY.includes(body.delivery as never) ? (body.delivery as string) : 'pickup'
     const payment = PAYMENT.includes(body.payment as never) ? (body.payment as string) : 'cash'
     const locale = ['ka', 'ru', 'en'].includes(String(body.locale)) ? String(body.locale) : 'ka'
     if (!name) return Response.json({ error: 'name' }, { status: 422 })
     if (phone.replace(/\D/g, '').length < 9) return Response.json({ error: 'phone' }, { status: 422 })
     if (!ids.length) return Response.json({ error: 'empty' }, { status: 422 })
+    if (ids.length > MAX_ITEMS) return Response.json({ error: 'too_many', max: MAX_ITEMS }, { status: 422 })
 
-    await releaseExpired(req.payload)
-    const found = await req.payload.find({ collection: 'products', where: { id: { in: ids } }, locale: locale as 'ka', depth: 0, limit: 20, overrideAccess: true })
-    const available = found.docs.filter((p) => p.status === 'published')
-    const unavailable = ids.filter((id) => !available.some((p) => p.id === id))
-    if (unavailable.length) return Response.json({ error: 'unavailable', ids: unavailable }, { status: 409 })
+    await releaseExpired(payload).catch((e) => payload.logger.warn(`releaseExpired: ${String(e)}`))
+    // limits live in the database: serverless instances share no memory
+    const ipHash = hashIp(ip)
+    const [fromIp, open] = await Promise.all([
+      payload.count({ collection: 'orders', where: { and: [{ ipHash: { equals: ipHash } }, { createdAt: { greater_than: new Date(Date.now() - 24 * 3600e3).toISOString() } }] }, overrideAccess: true }),
+      payload.find({ collection: 'orders', where: { and: [{ phone: { equals: phone } }, { status: { equals: 'requested' } }] }, sort: '-createdAt', limit: MAX_OPEN_PER_PHONE, depth: 0, overrideAccess: true }),
+    ])
+    if (fromIp.totalDocs >= MAX_PER_IP) return Response.json({ error: 'rate_limited' }, { status: 429 })
+    if (open.docs.length >= MAX_OPEN_PER_PHONE) return Response.json({ error: 'open_request', number: open.docs[0].number }, { status: 409 })
 
-    const total = available.reduce((s, p) => s + Number(p.price ?? 0), 0)
+    const found = await payload.find({ collection: 'products', where: { id: { in: ids } }, locale: locale as 'ka', depth: 0, limit: MAX_ITEMS, overrideAccess: true })
+    const items = ids.map((id) => found.docs.find((p) => p.id === id)).filter((p): p is Product => Boolean(p))
+    const total = round(items.reduce((s, p) => s + Number(p.price ?? 0), 0))
+    const rewardCode = String(body.rewardCode ?? '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20)
+    const discount = await rewardDiscount(payload, rewardCode, items).catch(() => null)
     const reservedUntil = new Date(Date.now() + RESERVE_HOURS * 3600 * 1000).toISOString()
-    const order = await req.payload.create({
-      collection: 'orders',
-      overrideAccess: true,
-      data: {
-        status: 'requested',
-        name,
-        phone,
-        city: String(body.city ?? '').slice(0, 60),
-        delivery: delivery as never,
-        payment: payment as never,
-        gift: Boolean(body.gift),
-        giftNote: String(body.giftNote ?? '').slice(0, 300),
-        comment: String(body.comment ?? '').slice(0, 600),
-        rewardCode: String(body.rewardCode ?? '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20),
-        locale: locale as never,
-        items: available.map((p) => ({ product: p.id, title: p.title, sku: p.sku ?? '', price: Number(p.price ?? 0) })),
-        total,
-        reservedUntil,
-      },
-    })
-    for (const p of available) {
-      await req.payload.update({ collection: 'products', id: p.id, data: { status: 'reserved' }, overrideAccess: true })
+
+    let order: Order
+    await initTransaction(req)
+    try {
+      // reserve first, in one statement: of two customers asking for the same toy, only one gets it
+      const claimed = await moveProducts(payload, req, items.map((p) => p.id), ['published'], 'reserved')
+      const unavailable = ids.filter((id) => !claimed.includes(id))
+      if (unavailable.length) {
+        await killTransaction(req)
+        return Response.json({ error: 'unavailable', ids: unavailable }, { status: 409 })
+      }
+      order = await payload.create({
+        collection: 'orders',
+        overrideAccess: true,
+        req,
+        context: { itemsClaimed: true },
+        data: {
+          status: 'requested',
+          name,
+          phone,
+          city: String(body.city ?? '').slice(0, 60),
+          delivery: delivery as never,
+          payment: payment as never,
+          gift: Boolean(body.gift),
+          giftNote: String(body.giftNote ?? '').slice(0, 300),
+          comment: String(body.comment ?? '').slice(0, 600),
+          rewardCode,
+          discountPercent: discount?.percent ?? null,
+          payable: discount ? round(total - discount.amount) : null,
+          locale: locale as never,
+          items: items.map((p) => ({ product: p.id, title: p.title, sku: p.sku ?? '', price: Number(p.price ?? 0) })),
+          total,
+          reservedUntil,
+          ipHash,
+        },
+      })
+      await commitTransaction(req)
+    } catch (e) {
+      await killTransaction(req)
+      throw e
     }
     // the shop's Telegram hears about it after the customer already has the answer
     inBackground(
-      () => notifyNewOrder(req.payload, order),
-      (e) => req.payload.logger.warn(`Telegram notify failed: ${String(e)}`),
+      () => notifyNewOrder(payload, order),
+      (e) => payload.logger.warn(`Telegram notify failed: ${String(e)}`),
     )
-    return Response.json({ number: order.number, reservedUntil, total })
+    return Response.json({ number: order.number, reservedUntil, total, payable: order.payable ?? total })
   },
 }
 
@@ -130,17 +219,7 @@ export const Orders: CollectionConfig = {
   access: { read: isTeam, create: isTeam, update: isTeam, delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')) },
   endpoints: [requestEndpoint, releaseEndpoint],
   hooks: {
-    beforeChange: [
-      async ({ data, operation, req }) => {
-        if (operation === 'create' && !data.number) {
-          const last = await req.payload.find({ collection: 'orders', sort: '-createdAt', limit: 1, depth: 0, overrideAccess: true })
-          const n = (Number(String(last.docs[0]?.number ?? '0').replace(/\D/g, '')) || 0) + 1
-          data.number = `ZT-${String(n).padStart(4, '0')}`
-        }
-        return data
-      },
-    ],
-    afterChange: [syncProducts],
+    beforeChange: [assignNumber, syncItems],
   },
   fields: [
     { name: 'number', type: 'text', unique: true, index: true, label: L('ნომერი', 'Номер', 'Number'), admin: { readOnly: true, position: 'sidebar' } },
@@ -212,7 +291,14 @@ export const Orders: CollectionConfig = {
         },
       ],
     },
-    { name: 'total', type: 'number', label: L('ჯამი ₾', 'Итого ₾', 'Total ₾') },
+    {
+      type: 'row',
+      fields: [
+        { name: 'total', type: 'number', label: L('ჯამი ₾', 'Итого ₾', 'Total ₾') },
+        { name: 'discountPercent', type: 'number', min: 0, max: 100, label: L('ჯილდოს ფასდაკლება %', 'Скидка по награде %', 'Reward discount %'), admin: { readOnly: true, condition: (d) => Boolean(d?.discountPercent) } },
+        { name: 'payable', type: 'number', label: L('გადასახდელი ₾ (ფასდაკლებით)', 'К оплате ₾ (со скидкой)', 'To pay ₾ (discounted)'), admin: { condition: (d) => d?.payable != null } },
+      ],
+    },
     {
       type: 'row',
       fields: [
@@ -224,5 +310,7 @@ export const Orders: CollectionConfig = {
     { name: 'giftNote', type: 'textarea', label: L('მისალოცი', 'Поздравление', 'Gift note') },
     { name: 'comment', type: 'textarea', label: L('კომენტარი', 'Комментарий', 'Comment') },
     { name: 'notes', type: 'textarea', label: L('შიდა შენიშვნა', 'Внутренняя заметка', 'Internal note') },
+    // which network a website request came from (keyed hash, not the address) — for the per-day limit
+    { name: 'ipHash', type: 'text', index: true, admin: { hidden: true }, access: { read: () => false, update: () => false } },
   ],
 }

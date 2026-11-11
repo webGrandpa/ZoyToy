@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
-import { fmt, type Messages } from '../../i18n'
+import type { Messages } from '../../i18n'
+import { fmt } from '../../i18n/format'
 import type { Locale } from '../../i18n/config'
 
 /*

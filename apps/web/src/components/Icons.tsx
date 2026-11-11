@@ -22,3 +22,15 @@ export const IconX = (p: SVGProps<SVGSVGElement>) => (<svg {...base} strokeWidth
 export const IconTrash = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg>)
 export const IconGift = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><rect x="3" y="9" width="18" height="12" rx="2" /><path d="M3 13h18M12 9v12M12 9c-2-4-7-4-6-1s6 1 6 1zm0 0c2-4 7-4 6-1s-6 1-6 1z" /></svg>)
 export const IconKey = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><circle cx="8" cy="14" r="4.5" /><path d="M11.3 10.8 20 2M17 5l2.5 2.5M14.5 7.5 17 10" /></svg>)
+
+// contact channels and social networks — simple outline glyphs in the same style as the rest of the set
+export const IconInstagram = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" /></svg>)
+export const IconFacebook = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M14.5 21v-8h3l.5-3.5h-3.5V7.6c0-1 .4-1.8 1.9-1.8H18V2.7A20 20 0 0 0 15.6 2.5c-2.7 0-4.4 1.6-4.4 4.6v2.4H8.3V13h2.9v8" /></svg>)
+export const IconTiktok = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5" /><path d="M14 3c.4 2.8 2.3 4.6 5 4.8" /></svg>)
+export const IconYoutube = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="m10.5 9.5 4.5 2.5-4.5 2.5z" fill="currentColor" /></svg>)
+export const IconTelegram = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M21 4 3 11l6 2.2L18 7l-7 7.3.2 5.7 3.2-3.8L18.5 20z" /></svg>)
+export const IconWhatsapp = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8.4 19z" /><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a4.6 4.6 0 0 1-2.3-2.3l.8-1-1-2z" /></svg>)
+export const IconViber = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M12 2.8c4.8 0 8.2 2.3 8.2 7.5S17.2 17.6 12 17.6l-3.3 3V17C5.6 16 3.8 13.6 3.8 10.3 3.8 5.1 7.2 2.8 12 2.8z" /><path d="M9.3 7.5c0 2.8 2.4 5.2 5.2 5.2l.8-1.2-1.6-.8-.8.6a3.7 3.7 0 0 1-1.8-1.8l.6-.8-.8-1.6z" /></svg>)
+export const IconMail = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m4 7 8 6 8-6" /></svg>)
+export const IconPin = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>)
+export const IconClock = (p: SVGProps<SVGSVGElement>) => (<svg {...base} {...p}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></svg>)

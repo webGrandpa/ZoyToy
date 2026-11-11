@@ -76,13 +76,17 @@ describe('order cards and buttons', () => {
   })
 
   it('escapes customer text and shows a usable reward with the discounted total', () => {
-    const text = orderCard(order({ name: '<b>Nino</b>', comment: 'a & b', rewardCode: 'ZOY-AB12C' }), {
-      reward: { id: 1, code: 'ZOY-AB12C', percent: 20, status: 'issued', expiresAt: new Date(Date.now() + 3600e3).toISOString() },
-    })
+    const reward = { id: 1, code: 'ZOY-AB12C', percent: 20, status: 'issued', expiresAt: new Date(Date.now() + 3600e3).toISOString() }
+    const text = orderCard(order({ name: '<b>Nino</b>', comment: 'a & b', rewardCode: 'ZOY-AB12C', discountPercent: 20, payable: 50.4 }), { reward })
     expect(text).toContain('&lt;b&gt;Nino&lt;/b&gt;')
     expect(text).toContain('a &amp; b')
-    expect(text).toContain('−20%')
-    expect(text).toContain('50,40 ₾')
+    expect(text).toContain('<s>63 ₾</s> → <b>50,40 ₾</b> (−20%)')
+    // once redeemed, the amount to collect is still there
+    const used = orderCard(order({ rewardCode: 'ZOY-AB12C', discountPercent: 20, payable: 50.4 }), { reward: { ...reward, status: 'redeemed' } })
+    expect(used).toContain('50,40 ₾')
+    // a code that wasn't valid when the request came in is flagged, not silently applied
+    expect(orderCard(order({ rewardCode: 'ZOY-AB12C' }), { reward })).toContain('შეკვეთისას არ მოქმედებდა')
+    expect(fillTemplate('{total}', order({ payable: 50.4 }), 'en')).toBe('50.40 ₾')
   })
 
   it('knows when a reward cannot be used', () => {

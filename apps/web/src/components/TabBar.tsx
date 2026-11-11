@@ -17,7 +17,7 @@ export function TabBar() {
       <Link href={`/${locale}/shop`} aria-current={is(`/${locale}/shop`) ? 'page' : undefined}><IconGrid /><span>{m.nav.shop}</span></Link>
       <Link href={`/${locale}/play`} className="tab-play" aria-current={is(`/${locale}/play`) ? 'page' : undefined}><b className="play-bubble"><IconGame /></b><span>{m.nav.play}</span></Link>
       <button type="button" className="tab-cart" onClick={() => setCartOpen(true)}><IconCart /><span>{m.nav.cart}</span>{items.length ? <b className="tab-count">{items.length}</b> : null}</button>
-      <Link href={`/${locale}#contact`}><IconChat /><span>{m.nav.contact}</span></Link>
+      <Link href={`/${locale}/contact`} aria-current={is(`/${locale}/contact`) ? 'page' : undefined}><IconChat /><span>{m.nav.contact}</span></Link>
     </nav>
   )
 }

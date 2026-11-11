@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Locale } from '../i18n/config'
-import { fmt, type Messages } from '../i18n'
+import type { Messages } from '../i18n'
+import { fmt } from '../i18n/format'
 
 // ---------- i18n ----------
 type I18n = { locale: Locale; m: Messages; f: (s: string, vars?: Record<string, string | number>) => string }

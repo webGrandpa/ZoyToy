@@ -42,6 +42,8 @@ export type OrderCardData = {
   delivery?: string | null
   payment?: string | null
   total?: number | null
+  discountPercent?: number | null
+  payable?: number | null
   tracking?: string | null
   gift?: boolean | null
   giftNote?: string | null
@@ -109,11 +111,14 @@ export function orderCard(o: OrderCardData, extra: { reward?: RewardData | null;
   const lang = asLang(o.locale)
   const lines = [`${status.icon} <b>${esc(o.number ?? `#${o.id}`)}</b> · ${status.label}`, '']
   for (const i of o.items ?? []) lines.push(`• ${esc(i.title ?? '')} — ${money(i.price)}${i.sku ? ` · <code>${esc(i.sku)}</code>` : ''}`)
-  lines.push(`💰 <b>${money(o.total)}</b>${o.payment && PAYMENT[o.payment] ? ` · ${PAYMENT[o.payment]}` : ''}`)
+  const pay = o.payment && PAYMENT[o.payment] ? ` · ${PAYMENT[o.payment]}` : ''
+  // the discount was worked out when the request came in (valid code, campaign categories) — it stays with the order
+  const discounted = o.payable != null && Number(o.payable) < Number(o.total ?? 0)
+  lines.push(discounted ? `💰 <s>${money(o.total)}</s> → <b>${money(o.payable)}</b> (−${o.discountPercent ?? 0}%)${pay}` : `💰 <b>${money(o.total)}</b>${pay}`)
   if (o.rewardCode) {
     const r = rewardState(extra.reward)
-    const discounted = r.usable && extra.reward ? ` → <b>${money(Math.round(Number(o.total ?? 0) * (100 - extra.reward.percent)) / 100)}</b>` : ''
-    lines.push(`🎮 <code>${esc(o.rewardCode)}</code> — ${r.line}${discounted}`)
+    const note = discounted ? '' : o.discountPercent ? ' · ამ ნივთებზე არ ვრცელდება' : r.usable ? ' · ⚠️ შეკვეთისას არ მოქმედებდა' : ''
+    lines.push(`🎮 <code>${esc(o.rewardCode)}</code> — ${r.line}${note}`)
   }
   lines.push(`👤 ${esc(o.name)} · ${esc(prettyPhone(o.phone))}`)
   const where = [o.city?.trim() ? esc(o.city.trim()) : null, o.delivery ? DELIVERY[o.delivery] : null].filter(Boolean)
@@ -230,7 +235,8 @@ export type DigestData = {
   requested: ListedOrder[]
   confirmed: ListedOrder[]
   toShip: ListedOrder[]
-  last24h: { orders: number; rewards: number }
+  /** storeSum is already formatted (₾) — sales made at the counter, docs/04 „მაღაზიაში გაყიდვა“ */
+  last24h: { orders: number; rewards: number; storeSales?: number; storeSum?: string }
   shelf: { published: number; reserved: number }
   now?: Date
 }
@@ -245,7 +251,9 @@ export function digestCard(d: DigestData) {
   if (d.confirmed.length) lines.push(`✅ დადასტურებული, გადაუხდელი — ${d.confirmed.map((o) => esc(o.number ?? `#${o.id}`)).join(', ')}`)
   if (d.toShip.length) lines.push(`📦 გასაგზავნი — ${d.toShip.map((o) => esc(o.number ?? `#${o.id}`)).join(', ')}`)
   if (!d.requested.length && !d.confirmed.length && !d.toShip.length) lines.push('🦒 ახალი საქმე არ არის — მშვიდი დღე!')
-  lines.push('', `📊 ბოლო 24 სთ: ${d.last24h.orders} მოთხოვნა · 🎮 ${d.last24h.rewards} ჯილდო`, `🧸 თაროზე ${d.shelf.published} · დაჯავშნილი ${d.shelf.reserved}`)
+  lines.push('', `📊 ბოლო 24 სთ: ${d.last24h.orders} მოთხოვნა · 🎮 ${d.last24h.rewards} ჯილდო`)
+  if (d.last24h.storeSales) lines.push(`🛒 მაღაზიაში გაიყიდა: ${d.last24h.storeSales} · ${esc(d.last24h.storeSum ?? '')}`)
+  lines.push(`🧸 თაროზე ${d.shelf.published} · დაჯავშნილი ${d.shelf.reserved}`)
   const keyboard: Keyboard = d.requested.slice(0, 6).map((o) => [
     { text: `💬 ${o.number ?? `#${o.id}`} · ${clip(o.name, 16)}`, url: whatsappLink(o.phone) },
     { text: '📋 გახსნა', callback_data: `v:${o.id}` },

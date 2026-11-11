@@ -8,6 +8,8 @@
 import { mulberry32 } from './rng'
 
 export const WH = { HOLES: 9, DUR: 30, FPS: 60, MAX_TAPS: 420 } as const
+/** Human reaction is ~200 ms; a handful of lucky anticipations are fine, a stream of 150-ms hits is a script. */
+export const WH_FAIR = { MIN_REACTION_TICKS: 9, MAX_QUICK_HITS: 4 } as const
 export const WH_TICKS = WH.DUR * WH.FPS
 export const WH_POINTS = { zoy: 10, gold: 30, cloud: -15, miss: -3, streakEvery: 5, streakBonus: 6 } as const
 
@@ -39,10 +41,10 @@ export function schedule(seed: number): Mole[] {
   return moles
 }
 
-export type WhackState = { moles: Mole[]; hit: Set<number>; score: number; streak: number; hits: number; lastT: number; taps: number }
+export type WhackState = { moles: Mole[]; hit: Set<number>; score: number; streak: number; hits: number; lastT: number; taps: number; quick: number }
 
 export function createWhack(seed: number): WhackState {
-  return { moles: schedule(seed), hit: new Set(), score: 0, streak: 0, hits: 0, lastT: -1, taps: 0 }
+  return { moles: schedule(seed), hit: new Set(), score: 0, streak: 0, hits: 0, lastT: -1, taps: 0, quick: 0 }
 }
 
 /** Is `m` sticking out of its box at tick `t` (and not already booped)? */
@@ -61,6 +63,7 @@ export function tap(s: WhackState, p: Tap): WhackHit | null {
     return { kind: 'miss', points: WH_POINTS.miss, bonus: 0, hole: p.h }
   }
   s.hit.add(m.id)
+  if (m.kind !== 'cloud' && p.t - m.start < WH_FAIR.MIN_REACTION_TICKS) s.quick++
   const points = WH_POINTS[m.kind]
   let bonus = 0
   if (m.kind === 'cloud') {
@@ -79,5 +82,5 @@ export function replayWhack(seed: number, taps: Tap[]) {
   const s = createWhack(seed)
   let invalid = 0
   for (const p of taps) if (!tap(s, { t: Number(p?.t), h: Number(p?.h) })) invalid++
-  return { score: s.score, invalid, hits: s.hits, lastT: Math.max(0, s.lastT) }
+  return { score: s.score, invalid, hits: s.hits, lastT: Math.max(0, s.lastT), quick: s.quick }
 }

@@ -3,11 +3,16 @@ import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import type { Locale } from '../i18n/config'
 import { fmt, type Messages } from '../i18n'
 import type { Location, SiteSetting } from '../payload-types'
-import { contactLinks } from '../lib/contact'
+import { allContacts, contactLinks, type Social } from '../lib/contact'
+import { IconFacebook, IconInstagram, IconTiktok, IconYoutube } from './Icons'
 import { Wave } from './home/Decor'
+
+const SOCIAL_ICON: Record<Social['key'], typeof IconInstagram> = { instagram: IconInstagram, facebook: IconFacebook, tiktok: IconTiktok, youtube: IconYoutube }
+const SOCIAL_NAME: Record<Social['key'], string> = { instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', youtube: 'YouTube' }
 
 export function Footer({ locale, m, settings, location }: { locale: Locale; m: Messages; settings: SiteSetting; location: Location | null }) {
   const c = contactLinks(settings)
+  const { socials } = allContacts(settings)
   return (
     <footer className="foot-site">
       <div className="foot-peek" aria-hidden="true"><GiraffeHead className="foot-peek-head" /></div>
@@ -38,6 +43,7 @@ export function Footer({ locale, m, settings, location }: { locale: Locale; m: M
           <ul>
             <li><Link href={`/${locale}/rent`}>{m.footer.howRent}</Link></li>
             <li><Link href={`/${locale}#contact`}>{m.footer.delivery}</Link></li>
+            <li><Link href={`/${locale}/contact`}>{m.footer.contact}</Link></li>
           </ul>
         </div>
         <div>
@@ -45,13 +51,26 @@ export function Footer({ locale, m, settings, location }: { locale: Locale; m: M
           <ul>
             <li><a href={c.whatsapp} target="_blank" rel="noopener">WhatsApp</a></li>
             {c.telegram ? <li><a href={c.telegram} target="_blank" rel="noopener">Telegram</a></li> : null}
-            <li><a href={c.instagram} target="_blank" rel="noopener">Instagram</a></li>
             {settings.phone ? <li><a href={c.phone ?? undefined}>{settings.phone}</a></li> : null}
           </ul>
+          <div className="foot-social">
+            {socials.map((s) => {
+              const Ic = SOCIAL_ICON[s.key]
+              return (
+                <a key={s.key} href={s.href} target="_blank" rel="noopener" aria-label={SOCIAL_NAME[s.key]} title={SOCIAL_NAME[s.key]}>
+                  <Ic />
+                </a>
+              )
+            })}
+          </div>
         </div>
       </div>
       <div className="wrap foot-bottom">
         <span>{fmt(locale, m.footer.rights, { year: new Date().getFullYear() })}</span>
+        <span className="foot-credit">
+          {m.footer.credit}{' '}
+          <a href="https://github.com/webGrandpa" target="_blank" rel="noopener">webGrandpa</a>
+        </span>
       </div>
     </footer>
   )

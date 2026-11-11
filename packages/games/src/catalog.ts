@@ -4,8 +4,8 @@
  * lands around 300–450, an excellent one 600+), so the same reward tiers work for any game.
  */
 import { replay as replayToyDrop, TD, TICKS } from './toy-drop'
-import { MEM, replayMemory, type Flip } from './memory'
-import { WH, WH_TICKS, replayWhack, type Tap } from './whack'
+import { MEM, MEM_FAIR, replayMemory, type Flip } from './memory'
+import { WH, WH_FAIR, WH_TICKS, replayWhack, type Tap } from './whack'
 import { ST, ST_TICKS, replayStack } from './stack'
 
 export const GAME_IDS = ['toy-drop', 'memory', 'whack', 'stack'] as const
@@ -36,12 +36,15 @@ export function verifyRound(game: GameId, seed: number, input: unknown, claimed:
     score = r.score
     if (r.invalid) reasons.push('invalid_moves')
     if (elapsedMs < r.lastT - 1500) reasons.push('too_fast')
+    if (r.blind > MEM_FAIR.MAX_BLIND) reasons.push('lucky_matches')
+    if (r.doneAt !== null && r.doneAt < MEM_FAIR.MIN_DONE_MS) reasons.push('too_quick')
   } else if (game === 'whack') {
     if (list.length > WH.MAX_TAPS) reasons.push('too_many')
     const r = replayWhack(seed, list.slice(0, WH.MAX_TAPS) as Tap[])
     score = r.score
     if (r.invalid) reasons.push('invalid_moves')
     if (elapsedMs < (WH_TICKS / WH.FPS) * 1000 - 2000) reasons.push('too_fast')
+    if (r.quick > WH_FAIR.MAX_QUICK_HITS) reasons.push('inhuman_reactions')
   } else if (game === 'stack') {
     if (list.length > ST.MAX_LEVELS + 1) reasons.push('too_many')
     const r = replayStack(seed, list.slice(0, ST.MAX_LEVELS + 1) as number[])

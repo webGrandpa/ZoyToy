@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     orders: Order;
+    'store-sales': StoreSale;
     products: Product;
     categories: Category;
     franchises: Franchise;
@@ -87,6 +88,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    'store-sales': StoreSalesSelect<false> | StoreSalesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     franchises: FranchisesSelect<false> | FranchisesSelect<true>;
@@ -169,12 +171,15 @@ export interface Order {
       }[]
     | null;
   total?: number | null;
+  discountPercent?: number | null;
+  payable?: number | null;
   gift?: boolean | null;
   rewardCode?: string | null;
   locale?: ('ka' | 'ru' | 'en') | null;
   giftNote?: string | null;
   comment?: string | null;
   notes?: string | null;
+  ipHash?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -429,6 +434,56 @@ export interface Location {
   createdAt: string;
 }
 /**
+ * New sales come from the “🛒 In-store sale” screen (with the QR scanner). Deleting a record undoes the sale and puts the item back on the shelf.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-sales".
+ */
+export interface StoreSale {
+  id: number;
+  product?: (number | null) | Product;
+  title?: string | null;
+  sku?: string | null;
+  price: number;
+  listPrice?: number | null;
+  payment: 'cash' | 'card' | 'transfer';
+  phone?: string | null;
+  note?: string | null;
+  soldBy?: (number | null) | User;
+  order?: (number | null) | Order;
+  previousStatus?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  roles: ('admin' | 'staff')[];
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
  * Rewards apply to every game switched on in Site settings → Games.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -501,34 +556,6 @@ export interface GameSession {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  roles: ('admin' | 'staff')[];
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -554,6 +581,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'store-sales';
+        value: number | StoreSale;
       } | null)
     | ({
         relationTo: 'products';
@@ -665,12 +696,34 @@ export interface OrdersSelect<T extends boolean = true> {
         id?: T;
       };
   total?: T;
+  discountPercent?: T;
+  payable?: T;
   gift?: T;
   rewardCode?: T;
   locale?: T;
   giftNote?: T;
   comment?: T;
   notes?: T;
+  ipHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-sales_select".
+ */
+export interface StoreSalesSelect<T extends boolean = true> {
+  product?: T;
+  title?: T;
+  sku?: T;
+  price?: T;
+  listPrice?: T;
+  payment?: T;
+  phone?: T;
+  note?: T;
+  soldBy?: T;
+  order?: T;
+  previousStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1011,10 +1064,15 @@ export interface SiteSetting {
    * Username without @
    */
   telegram?: string | null;
+  /**
+   * International format, e.g. 9955XXXXXXXX
+   */
+  viber?: string | null;
+  email?: string | null;
   instagram?: string | null;
   facebook?: string | null;
   tiktok?: string | null;
-  email?: string | null;
+  youtube?: string | null;
   hours?: string | null;
   season?: ('auto' | 'none' | 'ny' | 'summer' | 'june1' | 'school') | null;
   announcement?: string | null;
@@ -1045,10 +1103,12 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   phone?: T;
   whatsapp?: T;
   telegram?: T;
+  viber?: T;
+  email?: T;
   instagram?: T;
   facebook?: T;
   tiktok?: T;
-  email?: T;
+  youtube?: T;
   hours?: T;
   season?: T;
   announcement?: T;

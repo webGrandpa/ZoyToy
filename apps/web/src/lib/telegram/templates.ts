@@ -60,6 +60,8 @@ export type OrderForMessage = {
   name?: string | null
   number?: string | null
   total?: number | null
+  /** what is left to pay after a game reward (set when the request carried a valid code) */
+  payable?: number | null
   tracking?: string | null
   items?: { title?: string | null }[] | null
 }
@@ -78,7 +80,7 @@ export function fillTemplate(text: string, o: OrderForMessage, lang: Lang) {
     name: o.name?.trim() || '',
     number: o.number || '',
     items: (o.items ?? []).map((i) => i.title?.trim()).filter(Boolean).join(', '),
-    total: money(o.total, lang),
+    total: money(o.payable ?? o.total, lang),
     tracking: o.tracking?.trim() || '—',
   }
   return text.replace(/\{(name|number|items|total|tracking)\}/g, (_, k: string) => values[k])

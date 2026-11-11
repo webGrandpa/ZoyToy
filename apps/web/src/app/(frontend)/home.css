@@ -201,9 +201,29 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .tbox-dots { position: absolute; inset: 8px 0 0; border-radius: 0 0 20px 20px; background-image: radial-gradient(rgb(255 255 255 / .45) 3px, transparent 3.6px); background-size: 20px 20px; pointer-events: none; }
 .tbox-front b { position: relative; max-width: 100%; color: #1F1A3D; font-size: clamp(13px, 1.3vw, 15px); line-height: 1.25; background: rgb(255 255 255 / .92); padding: 6px 12px; border-radius: 12px; border: 2px solid var(--zt-edge); box-shadow: 0 3px 0 rgb(31 26 61 / .22); overflow-wrap: break-word; hyphens: auto; }
 .tbox:hover .tbox-lid, .tbox:focus-visible .tbox-lid { transform: perspective(560px) rotateX(4deg); animation: none; }
-.tbox:hover .tbox-toy, .tbox:focus-visible .tbox-toy { transform: translateY(-60px) rotate(-8deg) scale(1.07); animation: none; }
+.tbox:hover .tbox-toy, .tbox:focus-visible .tbox-toy { animation: none; }
 .tbox:hover .tbox-front { transform: translateY(-2px); box-shadow: 0 10px 0 var(--zt-edge); }
 .tbox:active .tbox-front { transform: translateY(5px); box-shadow: 0 2px 0 var(--zt-edge); }
+/* the box blooms on hover: six toys of the shelf fan out of the opening like a bouquet (Bouquet.tsx).
+   Each sits at the opening, then turns to its angle, travels out along it and leans a little outwards. */
+.tbox { --k: 1; }
+.tbox:hover, .tbox:focus-visible { z-index: 4; }
+.tbox-bouquet { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.tbox-b { position: absolute; left: 50%; top: 62px; width: 62px; margin-left: -31px; opacity: 0;
+  transform: rotate(var(--a)) translateY(18px) scale(.35);
+  transition: transform .6s var(--zt-spring), opacity .2s ease; transition-delay: calc(var(--j) * 45ms); }
+.tbox-b svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 0 rgb(31 26 61 / .18)); }
+/* the crown of the bouquet and the one in front are a touch bigger */
+.tbox-b:nth-child(3), .tbox-b:nth-child(6) { width: 70px; margin-left: -35px; }
+.tbox:hover .tbox-b, .tbox:focus-visible .tbox-b { opacity: 1; transform: rotate(var(--a)) translateY(calc(var(--r) * var(--k) * -1)) rotate(calc(var(--a) * -.65)); }
+/* the box's own toy ducks back in while the bouquet is out */
+.tbox:hover .tbox-toy, .tbox:focus-visible .tbox-toy { transform: translateY(26px) scale(.7); opacity: 0; transition: transform .35s ease, opacity .2s ease; }
+@media (max-width: 640px) {
+  .tbox { --k: .74; }
+  .tbox-b { width: 48px; margin-left: -24px; top: 70px; }
+  .tbox-b:nth-child(3), .tbox-b:nth-child(6) { width: 54px; margin-left: -27px; }
+}
+@media (prefers-reduced-motion: reduce) { .tbox-b { transition-duration: 1ms; transition-delay: 0ms; } }
 @keyframes lid-hop { 0%, 80%, 100% { transform: perspective(560px) rotateX(56deg); } 86% { transform: perspective(560px) rotateX(14deg); } 92% { transform: perspective(560px) rotateX(62deg); } }
 @keyframes toy-hop { 0%, 80%, 100% { translate: 0 0; } 86% { translate: 0 -30px; } 92% { translate: 0 3px; } }
 @media (max-width: 640px) { .tbox { height: 190px; } .tbox-toy { width: 84px; margin-left: -42px; top: 34px; } .tbox-front { padding-inline: 5px; } .tbox-front b { font-size: 12.5px; padding: 5px 7px; overflow-wrap: normal; hyphens: auto; } }
@@ -439,9 +459,6 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .shop-hero .count-pill { display: inline-flex; gap: 8px; align-items: center; margin-top: 14px; padding: 6px 14px; border-radius: 999px; background: var(--zt-surface); border: 2px solid var(--zt-edge); box-shadow: 0 3px 0 var(--zt-edge); font-weight: 700; font-size: 14px; }
 .shop-hero .hill { position: absolute; left: 0; right: 0; bottom: -1px; }
 @media (max-width: 560px) { .shop-hero .wrap { grid-template-columns: 1fr; } .shop-hero .wrap > div { padding-right: 84px; } .shop-hero-art { position: absolute; right: 14px; top: 2px; width: 80px; } }
-.filters { background: var(--zt-surface); border: 3px solid var(--zt-edge); border-radius: 24px; box-shadow: 0 6px 0 var(--zt-edge); padding: 14px 14px 8px; margin-top: -10px; position: relative; z-index: 2; }
-/* wide screens: chips wrap instead of hiding behind the panel edge */
-@media (min-width: 641px) { .filter-row { flex-wrap: wrap; overflow: visible; } }
 
 /* ---------- product page polish ---------- */
 .pdp { border-width: 3px; box-shadow: 0 8px 0 var(--zt-edge); border-radius: 30px; }

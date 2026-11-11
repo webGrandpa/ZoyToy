@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRef, useState, type PointerEvent } from 'react'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
-import { dateText, money } from '../i18n'
+import { dateText, money } from '../i18n/format'
 import type { CardVM } from '../lib/data'
 import { ConditionBadge, ConditionScale } from './Condition'
 import { IconPlus } from './Icons'

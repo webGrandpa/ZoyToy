@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
-import { money } from '../i18n'
+import { money } from '../i18n/format'
 import type { CardVM } from '../lib/data'
 import { ConditionBadge } from './Condition'
 import { useI18n, useShop } from './Providers'
@@ -73,7 +73,7 @@ export function Stories({ items }: { items: CardVM[] }) {
             }}
           >
             <span className="story-ring">
-              <span className={`tint-${p.color}`}>{p.image ? <img src={p.image.src} alt="" loading="lazy" /> : <ToyArt kind={p.art} />}</span>
+              <span className={`tint-${p.color}`}>{p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="80px" alt="" loading="lazy" decoding="async" /> : <ToyArt kind={p.art} />}</span>
             </span>
             <small>{p.title}</small>
           </button>

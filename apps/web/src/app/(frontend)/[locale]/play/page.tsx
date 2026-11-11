@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { alternates } from '../../../../lib/seo'
 import { isLocale, type Locale } from '../../../../i18n/config'
 import { getMessages } from '../../../../i18n'
 import { getSettings } from '../../../../lib/data'
@@ -12,8 +13,9 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  const m = getMessages(isLocale(locale) ? locale : 'ka')
-  return { title: m.play.title, description: m.play.lede }
+  const l = isLocale(locale) ? locale : 'ka'
+  const m = getMessages(l)
+  return { title: m.play.title, description: m.play.lede, alternates: alternates(l, '/play') }
 }
 
 const PRACTICE_TIERS = [{ minScore: 150, percent: 10 }, { minScore: 300, percent: 20 }, { minScore: 450, percent: 30 }, { minScore: 600, percent: 50 }]

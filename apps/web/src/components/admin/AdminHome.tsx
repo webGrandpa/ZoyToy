@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
+import { saleTotals, shopDayStart } from '../../lib/store'
 
 type Lang = 'ka' | 'ru' | 'en'
 type Props = { payload: Payload; i18n?: { language?: string }; user?: { email?: string | null } | null }
@@ -8,6 +9,8 @@ const T: Record<Lang, Record<string, string>> = {
   ka: {
     hello: 'გამარჯობა! რას გავაკეთებთ დღეს?',
     newItem: 'ახალი ნივთი', newItemHint: 'ფოტო, ფასი, მდგომარეობა',
+    sale: 'მაღაზიაში გაყიდვა', saleNone: 'დღეს ჯერ არაფერი', saleToday: 'დღეს',
+    labels: 'QR ეტიკეტები', labelsHint: 'ბეჭდვა ნივთებზე დასაკრავად',
     orders: 'შეკვეთები', ordersNew: 'ახალი მოთხოვნა', ordersNone: 'ახალი არაფერია',
     reward: 'ჯილდოს კოდი', rewardHint: 'შეამოწმე ZOY-კოდი',
     photo: 'ფოტოს ატვირთვა', photoHint: 'კამერიდან ან გალერეიდან',
@@ -20,6 +23,8 @@ const T: Record<Lang, Record<string, string>> = {
   ru: {
     hello: 'Здравствуйте! Что делаем сегодня?',
     newItem: 'Новый товар', newItemHint: 'Фото, цена, состояние',
+    sale: 'Продажа в магазине', saleNone: 'Сегодня пока нет', saleToday: 'сегодня',
+    labels: 'QR-этикетки', labelsHint: 'Печать для наклейки на товар',
     orders: 'Заказы', ordersNew: 'новых запросов', ordersNone: 'Новых нет',
     reward: 'Код награды', rewardHint: 'Проверить ZOY-код',
     photo: 'Загрузить фото', photoHint: 'С камеры или из галереи',
@@ -32,6 +37,8 @@ const T: Record<Lang, Record<string, string>> = {
   en: {
     hello: 'Hello! What are we doing today?',
     newItem: 'New item', newItemHint: 'Photo, price, condition',
+    sale: 'In-store sale', saleNone: 'Nothing yet today', saleToday: 'today',
+    labels: 'QR labels', labelsHint: 'Print to stick on items',
     orders: 'Orders', ordersNew: 'new requests', ordersNone: 'Nothing new',
     reward: 'Reward code', rewardHint: 'Check a ZOY code',
     photo: 'Upload a photo', photoHint: 'Camera or gallery',
@@ -61,13 +68,15 @@ export async function AdminHome({ payload, i18n }: Props) {
   const lang: Lang = i18n?.language === 'ru' || i18n?.language === 'en' ? i18n.language : 'ka'
   const t = T[lang]
   const admin = payload.config.routes?.admin ?? '/admin'
-  const [fresh, onShelf, reserved, recent] = await Promise.all([
+  const [fresh, onShelf, reserved, recent, sold] = await Promise.all([
     payload.count({ collection: 'orders', where: { status: { equals: 'requested' } } }),
     payload.count({ collection: 'products', where: { status: { equals: 'published' } } }),
     payload.count({ collection: 'products', where: { status: { equals: 'reserved' } } }),
     payload.find({ collection: 'orders', limit: 4, sort: '-createdAt', depth: 0 }),
+    payload.find({ collection: 'store-sales', where: { createdAt: { greater_than_equal: shopDayStart().toISOString() } }, limit: 500, pagination: false, depth: 0, select: { price: true, payment: true } }),
   ])
   const money = (n?: number | null) => `${(n ?? 0).toFixed(2).replace('.', ',')} ₾`
+  const day = saleTotals(sold.docs)
   return (
     <section className="zt-home">
       <div className="zt-home__hello">
@@ -79,6 +88,11 @@ export async function AdminHome({ payload, i18n }: Props) {
           <span className="zt-tile__ic" aria-hidden="true">＋</span>
           <b>{t.newItem}</b>
           <small>{t.newItemHint}</small>
+        </a>
+        <a className="zt-tile zt-tile--sale" href={`${admin}/store-sale`}>
+          <span className="zt-tile__ic" aria-hidden="true">🛒</span>
+          <b>{t.sale}</b>
+          <small>{day.count ? `${t.saleToday}: ${day.count} · ${money(day.sum)}` : t.saleNone}</small>
         </a>
         <a className="zt-tile zt-tile--orders" href={`${admin}/collections/orders?where[status][equals]=requested`}>
           <span className="zt-tile__ic" aria-hidden="true">📦</span>
@@ -100,6 +114,11 @@ export async function AdminHome({ payload, i18n }: Props) {
           <span className="zt-tile__ic" aria-hidden="true">🧸</span>
           <b>{t.items}</b>
           <small>{onShelf.totalDocs} {t.onShelf} · {reserved.totalDocs} {t.reserved}</small>
+        </a>
+        <a className="zt-tile zt-tile--labels" href={`${admin}/labels`}>
+          <span className="zt-tile__ic" aria-hidden="true">🏷️</span>
+          <b>{t.labels}</b>
+          <small>{t.labelsHint}</small>
         </a>
         <a className="zt-tile zt-tile--games" href={`${admin}/collections/game-campaigns`}>
           <span className="zt-tile__ic" aria-hidden="true">🎮</span>

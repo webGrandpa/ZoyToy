@@ -18,6 +18,7 @@ import { Brands } from './collections/Brands'
 import { Tags } from './collections/Tags'
 import { Locations } from './collections/Locations'
 import { Orders } from './collections/Orders'
+import { StoreSales } from './collections/StoreSales'
 import { GameCampaigns, GameSessions, Rewards } from './collections/Games'
 import { SiteSettings } from './globals/SiteSettings'
 import { LOCALES, DEFAULT_LOCALE } from './i18n/config'
@@ -46,6 +47,12 @@ export default buildConfig({
       providers: ['/components/admin/AdminTheme#AdminTheme'],
       // phone-first quick actions above the collection list (the owner runs the shop from a phone)
       beforeDashboard: ['/components/admin/AdminHome#AdminHome'],
+      afterNavLinks: ['/components/admin/NavExtra#NavExtra'],
+      // the counter (scan a label → sold) and printable QR labels — docs/04 „მაღაზიაში გაყიდვა“
+      views: {
+        storeSale: { Component: '/components/admin/StoreSaleView#StoreSaleView', path: '/store-sale', exact: true },
+        labels: { Component: '/components/admin/Labels#LabelsView', path: '/labels', exact: true },
+      },
     },
   },
   // Admin UI languages: Georgian (our own translation, src/i18n/admin), Russian, English.
@@ -61,6 +68,7 @@ export default buildConfig({
   // the shop through the products they reserve, so they need no hook of their own
   collections: [
     Orders,
+    StoreSales,
     ...[Products, Categories, Franchises, Brands, Tags, Media, Locations, GameCampaigns].map(withRefresh),
     Rewards,
     GameSessions,

@@ -45,6 +45,7 @@ export function OrderMessages() {
       name: String(fields.name?.value ?? ''),
       number: String(fields.number?.value ?? ''),
       total: Number(fields.total?.value ?? 0),
+      payable: fields.payable?.value != null && fields.payable.value !== '' ? Number(fields.payable.value) : null,
       tracking: String(fields.tracking?.value ?? ''),
       items: titles,
     }

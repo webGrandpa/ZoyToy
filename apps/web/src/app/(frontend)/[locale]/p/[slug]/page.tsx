@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { alternates, metadataBase, ogBase } from '../../../../../lib/seo'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RichText } from '@payloadcms/richtext-lexical/react'
@@ -14,6 +15,12 @@ import { IconTruck } from '../../../../../components/Icons'
 
 type Params = { params: Promise<{ locale: string; slug: string }> }
 
+// rendered on the first visit, then served from the cache until an admin edit or an order refreshes it
+// (lib/refresh.ts) — an empty list still switches the route to ISR (Next 16, guides/incremental-static-regeneration)
+export async function generateStaticParams() {
+  return []
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}
@@ -22,7 +29,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: p.seo.title ?? p.title,
     description: p.seo.description ?? p.shortDescription ?? undefined,
-    openGraph: { images: p.image ? [{ url: p.image.src }] : undefined },
+    alternates: alternates(locale, `/p/${p.slug}`),
+    openGraph: { ...ogBase(locale), images: p.image ? [{ url: p.image.src }] : undefined },
   }
 }
 
@@ -42,15 +50,23 @@ export default async function ProductPage({ params }: Params) {
     name: p.title,
     sku: p.sku,
     image: p.gallery.map((g) => g.large),
+    description: p.shortDescription ?? undefined,
+    url: `${metadataBase().toString().replace(/\/$/, '')}/${locale}/p/${p.slug}`,
     itemCondition: p.condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
-    offers: { '@type': 'Offer', price: p.price.toFixed(2), priceCurrency: 'GEL', availability: p.status === 'published' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut' },
+    offers: {
+      '@type': 'Offer',
+      price: p.price.toFixed(2),
+      priceCurrency: 'GEL',
+      itemCondition: p.condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
+      availability: `https://schema.org/${p.status === 'published' ? 'InStock' : p.status === 'reserved' ? 'Reserved' : 'SoldOut'}`,
+    },
   }
 
   return (
     <>
       <section className="sec pdp-sec">
         <div className="wrap">
-          <nav className="crumbs" aria-label="breadcrumbs">
+          <nav className="crumbs" aria-label={m.nav.shop}>
             <Link href={`/${locale}/shop`}>{m.nav.shop}</Link>
             {p.categories[0] ? <> / <Link href={`/${locale}/shop?c=${p.categories[0].slug}`}>{p.categories[0].title}</Link></> : null}
           </nav>

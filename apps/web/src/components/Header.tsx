@@ -24,7 +24,7 @@ export function Header({ locale, m, announcement }: { locale: Locale; m: Message
               { href: `/${locale}/shop`, match: `/${locale}/shop`, label: m.nav.shop, color: 'var(--zt-sun)', icon: <IconGrid /> },
               { href: `/${locale}/rent`, match: `/${locale}/rent`, label: m.nav.rent, color: 'var(--zt-sky)', icon: <IconKey /> },
               { href: `/${locale}/play`, match: `/${locale}/play`, label: m.nav.play, color: 'var(--zt-mint)', icon: <IconGame /> },
-              { href: `/${locale}#contact`, label: m.nav.contact, color: 'var(--zt-bubble)', icon: <IconChat /> },
+              { href: `/${locale}/contact`, match: `/${locale}/contact`, label: m.nav.contact, color: 'var(--zt-bubble)', icon: <IconChat /> },
             ]}
           />
           <div className="top-actions">

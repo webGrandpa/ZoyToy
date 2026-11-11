@@ -102,7 +102,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       ) : null}
 
       {/* ---------- categories as toy boxes ---------- */}
-      <section className="sec" aria-labelledby="cat-title">
+      <section className="sec doodles" aria-labelledby="cat-title">
         <div className="wrap">
           <div className="sec-head center">
             <p className="eyebrow">{m.categories.eyebrow}</p>
@@ -126,7 +126,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* ---------- new arrivals ---------- */}
       {arrivals.length ? (
-        <section className="sec" aria-labelledby="new-title">
+        <section className="sec doodles dd-2" aria-labelledby="new-title">
           <div className="wrap">
             <div className="sec-head row-head">
               <div>
@@ -146,7 +146,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* ---------- game teaser ---------- */}
       {campaign?.tiers?.length ? (
-        <section className="sec" aria-label={m.play.eyebrow}>
+        <section className="sec doodles dd-3" aria-label={m.play.eyebrow}>
           <div className="wrap">
             <GameTeaser locale={locale} m={m} title={campaign.title} tiers={campaign.tiers.map((t) => ({ minScore: t.minScore, percent: Math.min(t.percent, campaign.maxPercent ?? 50, 50) }))} />
           </div>
@@ -168,7 +168,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* ---------- storefront window ---------- */}
-      <section className="sec" aria-labelledby="vit-title">
+      <section className="sec doodles dd-4" aria-labelledby="vit-title">
         <div className="wrap">
           <div className="sec-head center">
             <p className="eyebrow">{m.vitrina.eyebrow}</p>
@@ -193,7 +193,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       {/* ---------- how we check ---------- */}
-      <section className="sec" aria-labelledby="check-title">
+      <section className="sec doodles dd-2" aria-labelledby="check-title">
         <div className="wrap">
           <div className="sec-head center">
             <p className="eyebrow">{m.check.eyebrow}</p>

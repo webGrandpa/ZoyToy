@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Where } from 'payload'
 import type { Category, Media, Product, Location, SiteSetting, Franchise, Brand } from '../payload-types'
 import type { ToyKind } from '@zoytoy/ui/ToyArt'
@@ -141,26 +142,27 @@ function toProduct(p: Product): ProductVM {
 // ---------- queries ----------
 const PUBLIC_LIST: Where = { status: { in: ['published', 'reserved'] } }
 
-export async function getSettings(locale: Locale): Promise<SiteSetting> {
+/** Once per request, however many components ask (React cache). */
+export const getSettings = cache(async function getSettings(locale: Locale): Promise<SiteSetting> {
   const payload = await payloadClient()
   return payload.findGlobal({ slug: 'site-settings', locale, depth: 0 })
-}
+})
 
-export async function getMainLocation(locale: Locale): Promise<Location | null> {
+export const getMainLocation = cache(async function getMainLocation(locale: Locale): Promise<Location | null> {
   const payload = await payloadClient()
   const res = await payload.find({ collection: 'locations', locale, limit: 1, where: { active: { equals: true } }, depth: 0 })
   return res.docs[0] ?? null
-}
+})
 
-export async function getCategories(locale: Locale) {
+export const getCategories = cache(async function getCategories(locale: Locale) {
   const payload = await payloadClient()
   const res = await payload.find({ collection: 'categories', locale, limit: 50, sort: 'order', depth: 0 })
   return res.docs.map((c) => ({ id: c.id, title: c.title, slug: c.slug ?? String(c.id), color: (c.color as Accent) ?? 'grape', icon: (TOY_KINDS.includes(c.icon as ToyKind) ? c.icon : 'blocks') as ToyKind, description: c.description ?? null }))
-}
+})
 
 export async function getNewArrivals(locale: Locale, limit = 8): Promise<CardVM[]> {
   const payload = await payloadClient()
-  const res = await payload.find({ collection: 'products', locale, limit, sort: '-publishedAt', where: PUBLIC_LIST, depth: 2 })
+  const res = await payload.find({ collection: 'products', locale, limit, sort: '-publishedAt', where: PUBLIC_LIST, depth: 1 })
   return res.docs.map(toCard)
 }
 
@@ -197,15 +199,15 @@ export async function getShop(locale: Locale, q: ShopQuery) {
   if (q.rent === '1') and.push({ 'rental.enabled': { equals: true } })
   const sort = q.sort === 'price-asc' ? 'price' : q.sort === 'price-desc' ? '-price' : '-publishedAt'
   const page = Math.max(1, Number(q.page) || 1)
-  const res = await payload.find({ collection: 'products', locale, where: { and }, sort, limit: 24, page, depth: 2 })
+  const res = await payload.find({ collection: 'products', locale, where: { and }, sort, limit: 24, page, depth: 1 })
   return { items: res.docs.map(toCard), total: res.totalDocs, page: res.page ?? 1, pages: res.totalPages }
 }
 
-export async function getProduct(locale: Locale, slug: string): Promise<ProductVM | null> {
+export const getProduct = cache(async function getProduct(locale: Locale, slug: string): Promise<ProductVM | null> {
   const payload = await payloadClient()
   const res = await payload.find({ collection: 'products', locale, where: { and: [{ slug: { equals: slug } }, { status: { in: ['published', 'reserved', 'sold'] } }] }, limit: 1, depth: 2 })
   return res.docs[0] ? toProduct(res.docs[0]) : null
-}
+})
 
 export async function getSimilar(locale: Locale, p: ProductVM, limit = 4): Promise<CardVM[]> {
   const payload = await payloadClient()
@@ -215,7 +217,7 @@ export async function getSimilar(locale: Locale, p: ProductVM, limit = 4): Promi
     collection: 'products',
     locale,
     limit,
-    depth: 2,
+    depth: 1,
     sort: '-publishedAt',
     where: { and: [PUBLIC_LIST, { id: { not_equals: p.id } }, ...(cats.docs.length ? [{ categories: { in: cats.docs.map((c) => c.id) } }] : [])] },
   })
@@ -236,7 +238,7 @@ export async function getStats() {
 /** Item with the biggest saving among the newest ones — the "find of the week". */
 export async function getSpotlight(locale: Locale): Promise<CardVM | null> {
   const payload = await payloadClient()
-  const res = await payload.find({ collection: 'products', locale, where: { status: { equals: 'published' } }, sort: '-publishedAt', limit: 30, depth: 2 })
+  const res = await payload.find({ collection: 'products', locale, where: { status: { equals: 'published' } }, sort: '-publishedAt', limit: 30, depth: 1 })
   const best = res.docs
     .map((p) => ({ p, save: Number(p.retailPriceNew ?? 0) - Number(p.price ?? 0) }))
     .sort((a, b) => b.save - a.save)[0]
@@ -245,6 +247,6 @@ export async function getSpotlight(locale: Locale): Promise<CardVM | null> {
 
 export async function getRentable(locale: Locale, limit = 24): Promise<CardVM[]> {
   const payload = await payloadClient()
-  const res = await payload.find({ collection: 'products', locale, where: { and: [{ status: { equals: 'published' } }, { 'rental.enabled': { equals: true } }] }, sort: '-publishedAt', limit, depth: 2 })
+  const res = await payload.find({ collection: 'products', locale, where: { and: [{ status: { equals: 'published' } }, { 'rental.enabled': { equals: true } }] }, sort: '-publishedAt', limit, depth: 1 })
   return res.docs.map(toCard)
 }

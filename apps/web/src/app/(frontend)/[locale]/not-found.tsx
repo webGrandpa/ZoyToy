@@ -1,17 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
-import { isLocale } from '../../../i18n/config'
-import { getMessages } from '../../../i18n'
+import { useI18n } from '../../../components/Providers'
 import { Balloons } from '../../../components/Balloons'
 
 /** Unknown product or page inside a locale — Zoy looks for it. */
 export default function NotFound() {
-  const seg = usePathname()?.split('/')[1]
-  const locale = isLocale(seg) ? seg : 'ka'
-  const m = getMessages(locale)
+  // the layout's provider already holds this language's texts — no need to ship all three dictionaries
+  const { locale, m } = useI18n()
   return (
     <section className="sec">
       <div className="wrap">

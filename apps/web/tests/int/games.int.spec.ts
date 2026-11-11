@@ -16,6 +16,44 @@ function perfectMemory(seed: number, gap = 400): Flip[] {
   return flips
 }
 
+/** A player with perfect memory who still has to look: turns unseen cards, matches what it has seen. */
+function humanMemory(seed: number, gap = 600): Flip[] {
+  const deck = deal(seed)
+  const seen = new Map<number, number[]>()
+  const done = new Set<number>()
+  const flips: Flip[] = []
+  let t = 0
+  let next = 0
+  const look = (i: number) => {
+    flips.push({ t: (t += gap), i })
+    seen.set(deck[i], [...(seen.get(deck[i]) ?? []).filter((x) => x !== i), i])
+  }
+  while (done.size < deck.length) {
+    const known = [...seen.entries()].find(([v, idx]) => idx.length === 2 && !done.has(idx[0]) && v >= 0)
+    if (known) {
+      look(known[1][0])
+      look(known[1][1])
+      known[1].forEach((i) => done.add(i))
+      continue
+    }
+    while (done.has(next) || (seen.get(deck[next]) ?? []).includes(next)) next++
+    const a = next++
+    look(a)
+    const partner = (seen.get(deck[a]) ?? []).find((i) => i !== a)
+    if (partner !== undefined) {
+      look(partner)
+      done.add(a).add(partner)
+      continue
+    }
+    while (done.has(next) || (seen.get(deck[next]) ?? []).includes(next)) next++
+    const b = next++
+    look(b)
+    if (deck[a] === deck[b]) done.add(a).add(b)
+    else t += 700 // cards turn back
+  }
+  return flips
+}
+
 describe('memory', () => {
   it('deals every toy exactly twice, the same way for the same seed', () => {
     const d = deal(42)
@@ -135,7 +173,7 @@ describe('server verification (catalog)', () => {
   })
 
   it('accepts an honest memory round and rejects a forged score', () => {
-    const flips = perfectMemory(31, 500)
+    const flips = humanMemory(31)
     const real = replayMemory(31, flips).score
     const lastT = flips[flips.length - 1].t
     expect(verifyRound('memory', 31, flips, real, lastT + 2500).reasons).toEqual([])
@@ -143,10 +181,24 @@ describe('server verification (catalog)', () => {
     expect(verifyRound('memory', 31, flips, real, lastT - 5000).reasons).toContain('too_fast')
   })
 
-  it('rejects a whack round that finished faster than the round lasts', () => {
-    const taps = schedule(2).slice(0, 5).map((m) => ({ t: m.start + 4, h: m.hole }))
-    const score = replayWhack(2, taps).score
-    expect(verifyRound('whack', 2, taps, score, 10_000).reasons).toContain('too_fast')
-    expect(verifyRound('whack', 2, taps, score, (WH.DUR + 2) * 1000).reasons).toEqual([])
+  it('rejects a memory round solved from the seed: every pair found at first sight, too quickly', () => {
+    for (const seed of [12345, 987654321, 42]) {
+      const flips = perfectMemory(seed, 90)
+      const r = verifyRound('memory', seed, flips, replayMemory(seed, flips).score, 5000)
+      expect(r.reasons).toContain('lucky_matches')
+      expect(r.reasons).toContain('too_quick')
+      // slowing the script down doesn't help: it still never looked at a card before matching it
+      const slow = perfectMemory(seed, 1500)
+      expect(verifyRound('memory', seed, slow, replayMemory(seed, slow).score, 30_000).reasons).toContain('lucky_matches')
+    }
+  })
+
+  it('rejects a whack round that finished faster than the round lasts, or hits with inhuman reactions', () => {
+    const honest = schedule(2).slice(0, 5).map((m) => ({ t: m.start + 14, h: m.hole }))
+    const score = replayWhack(2, honest).score
+    expect(verifyRound('whack', 2, honest, score, 10_000).reasons).toContain('too_fast')
+    expect(verifyRound('whack', 2, honest, score, (WH.DUR + 2) * 1000).reasons).toEqual([])
+    const bot = schedule(2).filter((m) => m.kind !== 'cloud').map((m) => ({ t: m.start + 2, h: m.hole }))
+    expect(verifyRound('whack', 2, bot, replayWhack(2, bot).score, (WH.DUR + 2) * 1000).reasons).toContain('inhuman_reactions')
   })
 })

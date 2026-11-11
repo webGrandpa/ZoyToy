@@ -20,8 +20,23 @@ const nextConfig: NextConfig = {
     return webpackConfig
   },
   turbopack: { root: path.resolve(dirname, '../..') },
+  poweredByHeader: false,
   async headers() {
     return [
+      // basic hardening for every page and API answer (audit 2026-11-11): no framing by other sites
+      // (clickjacking of /admin), no MIME sniffing, no full URLs leaking to other sites, and only the
+      // camera the in-store QR scanner needs
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+        ],
+      },
       // fonts never change under the same name — let browsers keep them for a year
       { source: '/fonts/:file*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
       // the *.vercel.app demo stays out of search results; the shop's own domain is indexed as usual

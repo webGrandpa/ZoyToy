@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { alternates } from '../../../../lib/seo'
 import Link from 'next/link'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
 import { isLocale, type Locale } from '../../../../i18n/config'
@@ -9,8 +10,9 @@ import { Bunting, Sprinkles, Wave } from '../../../../components/home/Decor'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  const m = getMessages(isLocale(locale) ? locale : 'ka')
-  return { title: m.rentPage.title, description: m.rentPage.lede }
+  const l = isLocale(locale) ? locale : 'ka'
+  const m = getMessages(l)
+  return { title: m.rentPage.title, description: m.rentPage.lede, alternates: alternates(l, '/rent') }
 }
 
 const STEP_ART: ToyKind[] = ['train', 'teddy', 'rocket', 'blocks']
@@ -34,7 +36,7 @@ export default async function RentPage({ params }: { params: Promise<{ locale: s
         <div className="hill" aria-hidden="true"><Wave color="var(--zt-canvas)" /></div>
       </section>
 
-      <section className="sec">
+      <section className="sec doodles">
         <div className="wrap">
           <ol className="rent-steps">
             {m.rentPage.steps.map((s, i) => (
@@ -65,7 +67,7 @@ export default async function RentPage({ params }: { params: Promise<{ locale: s
         <Wave color="var(--band)" flip />
       </section>
 
-      <section className="sec" aria-labelledby="rent-items">
+      <section className="sec doodles dd-3" aria-labelledby="rent-items">
         <div className="wrap">
           <div className="sec-head row-head">
             <h2 id="rent-items">{m.rentPage.itemsTitle}</h2>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { alternates } from '../../../../lib/seo'
 import Link from 'next/link'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
@@ -9,16 +10,29 @@ import { getCategories, getShop, type ShopQuery } from '../../../../lib/data'
 import { ProductCard } from '../../../../components/ProductCard'
 import { CONDITION_ORDER } from '../../../../components/Condition'
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const { locale } = await params
-  const m = getMessages(isLocale(locale) ? locale : 'ka')
-  return { title: m.shop.title, description: m.shop.lede }
+  const l = isLocale(locale) ? locale : 'ka'
+  const m = getMessages(l)
+  // a category is a page of its own for search engines; the other filters all point back to it
+  const c = [(await searchParams).c].flat()[0]
+  const cat = c ? (await getCategories(l)).find((x) => x.slug === c) : undefined
+  return {
+    title: cat?.title ?? m.shop.title,
+    description: cat?.description ?? m.shop.lede,
+    alternates: alternates(l, cat ? `/shop?c=${encodeURIComponent(cat.slug)}` : '/shop'),
+  }
 }
 
-export default async function Shop({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<ShopQuery> }) {
+type Raw = Record<string, string | string[] | undefined>
+/** One value per filter, even when a link repeats a parameter (?cond=a&cond=b used to crash the page). */
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.slice(0, 60)
+
+export default async function Shop({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Raw> }) {
   const { locale: l } = await params
   const locale = (isLocale(l) ? l : 'ka') as Locale
-  const q = await searchParams
+  const raw = await searchParams
+  const q: ShopQuery = { c: one(raw.c), cond: one(raw.cond), age: one(raw.age), sort: one(raw.sort), rent: one(raw.rent), page: one(raw.page) }
   const m = getMessages(locale)
   const [{ items, total, page, pages }, categories] = await Promise.all([getShop(locale, q), getCategories(locale)])
 
@@ -29,6 +43,17 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
     return `/${locale}/shop${s ? `?${s}` : ''}`
   }
   const activeCat = categories.find((c) => c.slug === q.c)
+  const cond = CONDITION_ORDER.find((c) => c === q.cond)
+  const ageIdx = q.age !== undefined && m.age.groups[Number(q.age)] ? Number(q.age) : null
+  const sorts = [['', m.shop.sortNew], ['price-asc', m.shop.sortPriceAsc], ['price-desc', m.shop.sortPriceDesc]] as const
+  const sortLabel = sorts.find(([k]) => k === (q.sort ?? ''))?.[1] ?? m.shop.sortNew
+  // what is switched on, each with its own way out
+  const active = [
+    activeCat ? { key: 'c', label: activeCat.title, clear: href({ c: undefined }) } : null,
+    ageIdx !== null ? { key: 'age', label: `${m.shop.age}: ${m.age.groups[ageIdx]}`, clear: href({ age: undefined }) } : null,
+    cond ? { key: 'cond', label: m.condition[cond], clear: href({ cond: undefined }) } : null,
+    q.rent === '1' ? { key: 'rent', label: m.shop.rentOnly, clear: href({ rent: undefined }) } : null,
+  ].filter((a): a is { key: string; label: string; clear: string } => Boolean(a))
 
   return (
     <>
@@ -44,35 +69,74 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
       </div>
       <div className="hill" aria-hidden="true"><Wave color="var(--zt-canvas)" /></div>
     </section>
-    <section className="sec shop">
+    <section className="sec shop doodles dd-2">
       <div className="wrap">
-        <div className="filters" aria-label={m.shop.filters}>
-          <div className="filter-row" role="group" aria-label={m.shop.category}>
-            <Link className="zt-chip" aria-current={!q.c ? 'true' : undefined} href={href({ c: undefined })}>{m.categories.all}</Link>
+        <div className="shopf">
+          {/* the main choice: which shelf — little toy tiles, each in its category colour */}
+          <nav className="shopf-cats" aria-label={m.shop.category}>
+            <Link className="cat-tile tint-grape" aria-current={!q.c ? 'page' : undefined} href={href({ c: undefined })}>
+              <span className="cat-tile-art" aria-hidden="true"><GiraffeHead /></span>
+              <b>{m.categories.all}</b>
+            </Link>
             {categories.map((c) => (
-              <Link key={c.id} className="zt-chip" aria-current={q.c === c.slug ? 'true' : undefined} href={href({ c: c.slug })}>{c.title}</Link>
+              <Link key={c.id} className={`cat-tile tint-${c.color}`} aria-current={q.c === c.slug ? 'page' : undefined} href={href({ c: c.slug })}>
+                <span className="cat-tile-art" aria-hidden="true"><ToyArt kind={c.icon} /></span>
+                <b>{c.title}</b>
+              </Link>
             ))}
+          </nav>
+
+          {/* everything else on one tidy bar */}
+          <div className="shopf-bar" aria-label={m.shop.filters} role="group">
+            <div className="shopf-age" role="group" aria-label={m.shop.age}>
+              <span className="shopf-label">{m.shop.age}</span>
+              <div className="seg">
+                <Link aria-current={ageIdx === null ? 'true' : undefined} href={href({ age: undefined })}>{m.shop.any}</Link>
+                {m.age.groups.map((g, i) => (
+                  <Link key={g} aria-current={ageIdx === i ? 'true' : undefined} href={href({ age: String(i) })}>{g.replace(/\s.*$/, '')}</Link>
+                ))}
+              </div>
+            </div>
+            <details className="shopf-menu" key={`cond-${cond ?? ''}`}>
+              <summary>
+                <span className="shopf-label">{m.shop.condition}</span>
+                <b>{cond ? <><i className={`cdot cdot--${cond}`} aria-hidden="true" />{m.condition[cond]}</> : m.shop.any}</b>
+              </summary>
+              <div className="shopf-pop">
+                <Link className="shopf-opt" aria-current={!cond ? 'true' : undefined} href={href({ cond: undefined })}>{m.shop.any}</Link>
+                {CONDITION_ORDER.map((c) => (
+                  <Link key={c} className="shopf-opt" aria-current={cond === c ? 'true' : undefined} href={href({ cond: c })}>
+                    <i className={`cdot cdot--${c}`} aria-hidden="true" />
+                    {m.condition[c]}
+                  </Link>
+                ))}
+              </div>
+            </details>
+            <details className="shopf-menu shopf-sort" key={`sort-${q.sort ?? ''}`}>
+              <summary aria-label={`${m.shop.sort}: ${sortLabel}`}>
+                <span className="shopf-label">{m.shop.sort}</span>
+                <b>{sortLabel}</b>
+              </summary>
+              <div className="shopf-pop shopf-pop--end">
+                {sorts.map(([k, label]) => (
+                  <Link key={k} className="shopf-opt" aria-current={(q.sort ?? '') === k ? 'true' : undefined} href={href({ sort: k || undefined })}>{label}</Link>
+                ))}
+              </div>
+            </details>
+            <Link className="shopf-switch" aria-current={q.rent === '1' ? 'true' : undefined} href={href({ rent: q.rent === '1' ? undefined : '1' })}>
+              <span className="knob" aria-hidden="true" />
+              {m.shop.rentOnly}
+            </Link>
           </div>
-          <div className="filter-row" role="group" aria-label={m.shop.age}>
-            <span className="filter-label">{m.shop.age}</span>
-            <Link className="zt-chip" aria-current={!q.age ? 'true' : undefined} href={href({ age: undefined })}>{m.shop.any}</Link>
-            {m.age.groups.map((g, i) => (
-              <Link key={g} className="zt-chip" aria-current={q.age === String(i) ? 'true' : undefined} href={href({ age: String(i) })}>{g}</Link>
+
+          <div className="shopf-active" aria-live="polite">
+            {active.map((a) => (
+              <Link key={a.key} className="shopf-tag" href={a.clear} aria-label={`${a.label} ×`}>
+                {a.label}
+                <span aria-hidden="true">×</span>
+              </Link>
             ))}
-          </div>
-          <div className="filter-row" role="group" aria-label={m.shop.condition}>
-            <span className="filter-label">{m.shop.condition}</span>
-            <Link className="zt-chip" aria-current={!q.cond ? 'true' : undefined} href={href({ cond: undefined })}>{m.shop.any}</Link>
-            {CONDITION_ORDER.map((c) => (
-              <Link key={c} className="zt-chip" aria-current={q.cond === c ? 'true' : undefined} href={href({ cond: c })}>{m.condition[c]}</Link>
-            ))}
-          </div>
-          <div className="filter-row filter-bottom">
-            <Link className="zt-chip" aria-current={q.rent === '1' ? 'true' : undefined} href={href({ rent: q.rent === '1' ? undefined : '1' })}>{m.shop.rentOnly}</Link>
-            <span className="filter-label">{m.shop.sort}</span>
-            {[['', m.shop.sortNew], ['price-asc', m.shop.sortPriceAsc], ['price-desc', m.shop.sortPriceDesc]].map(([k, label]) => (
-              <Link key={k} className="zt-chip" aria-current={(q.sort ?? '') === k ? 'true' : undefined} href={href({ sort: k || undefined })}>{label}</Link>
-            ))}
+            {active.length > 1 ? <Link className="shopf-reset" href={`/${locale}/shop`}>{m.shop.reset}</Link> : null}
             <span className="results">{fmt(locale, m.shop.results, { n: total })}</span>
           </div>
         </div>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
-import { money } from '../i18n'
+import { money } from '../i18n/format'
 import { contactLinks } from '../lib/contact'
 import { IconGift, IconX } from './Icons'
 import { useI18n, useShop, type CartItem } from './Providers'
@@ -81,12 +81,16 @@ export function CartDrawer({ contact }: { contact: Contact }) {
         return
       }
       if (res.status === 429) return setError(m.cart.errRate)
+      if (data.error === 'open_request') return setError(f(m.cart.errOpen, { n: data.number ?? '' }))
+      if (data.error === 'too_many') return setError(f(m.cart.errTooMany, { max: data.max ?? 6 }))
       if (!res.ok) return setError(m.cart.errGeneric)
       const items = [...shop.items]
       const text = [
         f(m.cart.msgHello, { n: data.number }),
         ...items.map((i) => `• ${i.title} — ${money(i.price)}`),
-        f(m.cart.msgTotal, { total: money(total) }),
+        // the server's numbers: prices as they are now, and a game reward if the code was valid
+        f(m.cart.msgTotal, { total: money(Number(data.total ?? total)) }),
+        data.payable != null && Number(data.payable) < Number(data.total) ? f(m.cart.msgDiscount, { total: money(Number(data.payable)) }) : '',
         f(m.cart.msgWhere, { city, delivery: m.cart.deliveryOpts[delivery] }),
         gift ? m.cart.msgGift : '',
       ].filter(Boolean).join('\n')

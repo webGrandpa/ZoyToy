@@ -1,7 +1,9 @@
-import type { CollectionConfig, CollectionBeforeChangeHook } from 'payload'
+import { APIError, type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
+import type { Product } from '../payload-types'
 import { isAdminField, isTeam, publishedOrTeam } from '../lib/access'
 import { L } from '../lib/labels'
 import { slugField } from '../fields/slug'
+import { highestNumber, lockNumbers, OPEN_ORDER, PAID_ORDER } from '../lib/stock'
 
 export const CONDITIONS = [
   { value: 'new', label: L('ახალი', 'Новое', 'New') },
@@ -12,22 +14,44 @@ export const CONDITIONS = [
   { value: 'fair', label: L('ნორმალური', 'Нормальное', 'Fair') },
 ] as const
 
-/** ZT-000123: next number after the highest existing SKU. */
-const assignSku: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
+/** ZT-000123: next number after the highest existing SKU, under a lock so two new items can't share one. */
+const assignSku: CollectionBeforeChangeHook<Product> = async ({ data, operation, req }) => {
   if (operation === 'create' && !data.sku) {
-    const last = await req.payload.find({ collection: 'products', sort: '-sku', limit: 1, depth: 0, req, overrideAccess: true })
-    const lastNum = Number(String(last.docs[0]?.sku ?? 'ZT-0').replace(/\D/g, '')) || 0
-    data.sku = `ZT-${String(lastNum + 1).padStart(6, '0')}`
+    await lockNumbers(req.payload, req, 'products.sku')
+    const n = (await highestNumber(req.payload, req, 'products', 'sku')) + 1
+    data.sku = `ZT-${String(n).padStart(6, '0')}`
   }
   return data
 }
 
 /** Timestamps for publishing and selling — used for "new arrivals" and hiding sold items after 30 days. */
-const stampStatus: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+const stampStatus: CollectionBeforeChangeHook<Product> = ({ data, originalDoc }) => {
   const now = new Date().toISOString()
-  if (data.status === 'published' && !data.publishedAt && !originalDoc?.publishedAt) data.publishedAt = now
-  if (data.status === 'sold' && originalDoc?.status !== 'sold') data.soldAt = now
-  if (data.status !== 'sold' && originalDoc?.status === 'sold') data.soldAt = null
+  // a partial update (bulk edit of other fields) keeps the current status
+  const status = data.status ?? originalDoc?.status
+  if (status === 'published' && !data.publishedAt && !originalDoc?.publishedAt) data.publishedAt = now
+  if (status === 'sold' && originalDoc?.status !== 'sold') data.soldAt = now
+  if (status !== 'sold' && originalDoc?.status === 'sold') data.soldAt = null
+  return data
+}
+
+/**
+ * A reserved or sold item is moved by its order (or its shop sale), not by hand: this also stops an
+ * edit form opened before a customer reserved the item from putting it back on sale when saved.
+ * Order and shop-sale hooks change the status straight in the database (lib/stock.ts), so they pass.
+ */
+const guardStatus: CollectionBeforeChangeHook<Product> = async ({ data, originalDoc, operation, req }) => {
+  if (operation !== 'update' || !originalDoc || !data.status || data.status === originalDoc.status) return data
+  if (originalDoc.status !== 'reserved' && originalDoc.status !== 'sold') return data
+  const statuses = originalDoc.status === 'reserved' ? OPEN_ORDER : PAID_ORDER
+  const order = await req.payload.find({ collection: 'orders', where: { and: [{ 'items.product': { equals: originalDoc.id } }, { status: { in: statuses } }] }, limit: 1, depth: 0, req, overrideAccess: true })
+  if (order.docs[0]) {
+    throw new APIError(`ეს ნივთი შეკვეთა ${order.docs[0].number}-შია — სტატუსი შეკვეთიდან იცვლება (გააუქმე ან დაასრულე შეკვეთა). შეიძლება ფორმა ძველია: განაახლე გვერდი.`, 409, null, true)
+  }
+  if (originalDoc.status === 'sold') {
+    const sale = await req.payload.count({ collection: 'store-sales', where: { product: { equals: originalDoc.id } }, req, overrideAccess: true })
+    if (sale.totalDocs) throw new APIError('ეს ნივთი მაღაზიაში გაიყიდა — გასაუქმებლად წაშალე ჩანაწერი „მაღაზიაში გაყიდვები“-ში, ნივთი თავისით დაბრუნდება.', 409, null, true)
+  }
   return data
 }
 
@@ -42,7 +66,7 @@ export const Products: CollectionConfig = {
   },
   access: { read: publishedOrTeam, create: isTeam, update: isTeam, delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')) },
   versions: { maxPerDoc: 25 },
-  hooks: { beforeChange: [assignSku, stampStatus] },
+  hooks: { beforeChange: [assignSku, guardStatus, stampStatus] },
   fields: [
     // ---------- sidebar ----------
     {
@@ -53,6 +77,8 @@ export const Products: CollectionConfig = {
       index: true,
       label: L('სტატუსი', 'Статус', 'Status'),
       admin: { position: 'sidebar' },
+      // a copy is a new, unpublished item
+      hooks: { beforeDuplicate: [() => 'draft'] },
       options: [
         { value: 'draft', label: L('დრაფტი', 'Черновик', 'Draft') },
         { value: 'published', label: L('გამოქვეყნებული', 'Опубликован', 'Published') },
@@ -61,10 +87,12 @@ export const Products: CollectionConfig = {
         { value: 'archived', label: L('არქივი', 'Архив', 'Archived') },
       ],
     },
-    { name: 'sku', type: 'text', unique: true, index: true, label: 'SKU', admin: { position: 'sidebar', readOnly: true, description: L('ავტომატური, QR ეტიკეტისთვის', 'Автоматически, для QR-этикетки', 'Automatic, for the QR label') } },
+    { name: 'sku', type: 'text', unique: true, index: true, label: 'SKU', hooks: { beforeDuplicate: [() => null] }, admin: { position: 'sidebar', readOnly: true, description: L('ავტომატური, QR ეტიკეტისთვის', 'Автоматически, для QR-этикетки', 'Automatic, for the QR label') } },
     slugField(),
-    { name: 'publishedAt', type: 'date', index: true, label: L('გამოქვეყნდა', 'Опубликован', 'Published at'), admin: { position: 'sidebar', readOnly: true } },
-    { name: 'soldAt', type: 'date', label: L('გაიყიდა', 'Продан', 'Sold at'), admin: { position: 'sidebar', readOnly: true } },
+    // QR label + counter sale for this item (components/admin/ProductTools.tsx)
+    { name: 'productTools', type: 'ui', admin: { position: 'sidebar', components: { Field: '/components/admin/ProductTools#ProductTools' } } },
+    { name: 'publishedAt', type: 'date', index: true, hooks: { beforeDuplicate: [() => null] }, label: L('გამოქვეყნდა', 'Опубликован', 'Published at'), admin: { position: 'sidebar', readOnly: true } },
+    { name: 'soldAt', type: 'date', hooks: { beforeDuplicate: [() => null] }, label: L('გაიყიდა', 'Продан', 'Sold at'), admin: { position: 'sidebar', readOnly: true } },
     {
       type: 'tabs',
       tabs: [

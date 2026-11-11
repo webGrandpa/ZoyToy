@@ -1,4 +1,5 @@
 import type { Endpoint } from 'payload'
+import { refreshStorefront } from '../lib/refresh'
 import { releaseExpired } from '../collections/Orders'
 import { botToken } from '../lib/telegram/api'
 import { callTarget, handleUpdate, sendDigest } from '../lib/telegram/bot'
@@ -52,6 +53,8 @@ export const dailyJob: Endpoint = {
     const fromCron = Boolean(secret) && req.headers.get('authorization') === `Bearer ${secret}`
     if (secret && !fromCron && !req.user) return Response.json({ error: 'forbidden' }, { status: 403 })
     const released = await releaseExpired(req.payload)
+    // a new day: season, campaign dates and "new arrivals" may have moved — rebuild the cached pages
+    refreshStorefront()
     const hour = new Date().getUTCHours()
     const force = Boolean(req.user) && req.searchParams.get('force') === '1'
     const inWindow = fromCron || Boolean(req.user) || (hour >= 5 && hour < 12)

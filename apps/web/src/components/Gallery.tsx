@@ -30,7 +30,7 @@ export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'tit
   return (
     <div className="gallery">
       <div className={`gallery-main tint-${p.color}`}>
-        {img ? <img src={img.large} alt={img.alt || p.title} /> : <ToyArt kind={p.art} className="gallery-art" />}
+        {img ? <img src={img.large} srcSet={img.srcSet} sizes="(max-width: 860px) 100vw, 560px" width={img.width} height={img.height} fetchPriority={i === 0 ? 'high' : 'auto'} alt={img.alt || p.title} /> : <ToyArt kind={p.art} className="gallery-art" />}
         {!img ? <span className="gallery-note">{m.product.noPhoto}</span> : null}
         {spots.map((s) => (
           <button
@@ -57,7 +57,7 @@ export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'tit
         <div className="thumbs" role="tablist" aria-label={m.product.gallery.replace('{n}', '').replace('{total}', '')}>
           {p.gallery.map((g, n) => (
             <button key={g.src + n} type="button" role="tab" aria-selected={n === i} aria-label={f(m.product.gallery, { n: n + 1, total: p.gallery.length })} onClick={() => { setI(n); setSpot(null) }}>
-              <img src={g.src} alt="" loading="lazy" />
+              <img src={g.src} srcSet={g.srcSet} sizes="64px" alt="" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>

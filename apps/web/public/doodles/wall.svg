@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <!-- Zoy Toy "wallpaper": a few crayon doodles a child left on the wall. Tiles seamlessly; kept sparse on purpose. -->
+  <defs>
+    <filter id="crayon" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/>
+    </filter>
+  </defs>
+  <g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#crayon)">
+    <!-- spiral -->
+    <path stroke="#6B4EFF" d="M92 104c-2-7 7-11 12-6 7 7 2 19-9 20-14 1-22-13-17-25 7-15 28-18 40-6 14 13 9 38-9 46-21 9-45-2-51-23"/>
+    <!-- wobbly star -->
+    <path stroke="#FFC83D" d="M468 46l10 23 25 1-19 16 7 24-22-14-21 13 7-23-19-16 25-1z"/>
+    <!-- wave -->
+    <path stroke="#3EC5FF" d="M236 300c10-16 22-16 30 0s22 16 30 0 22-16 30 0 22 16 30 0"/>
+    <!-- heart -->
+    <path stroke="#FF5C93" d="M118 470c-24-15-31-32-19-42 8-7 17-2 19 6 3-8 12-13 20-6 11 11 3 28-20 42z"/>
+    <!-- little sun -->
+    <g stroke="#FF8A3D">
+      <circle cx="524" cy="452" r="15"/>
+      <path d="M524 421v-8M524 491v-8M493 452h-8M563 452h-8M502 430l-6-6M552 480l-6-6M546 430l6-6M496 480l6-6"/>
+    </g>
+    <!-- rainbow -->
+    <path stroke="#3DDBB0" d="M286 604c2-24 18-40 40-40s38 16 40 40M300 604c2-15 12-25 26-25s24 10 26 25"/>
+    <!-- loop-de-loop -->
+    <path stroke="#FF5C93" d="M372 182c14-6 22 4 14 12s-20-2-10-12 26-4 30 6c3 9-8 14-12 6s10-18 24-10"/>
+    <!-- a few dots -->
+    <g fill="#FFC83D" stroke="none">
+      <circle cx="206" cy="210" r="5"/>
+      <circle cx="586" cy="300" r="4"/>
+    </g>
+    <g fill="#6B4EFF" stroke="none" opacity=".7">
+      <circle cx="40" cy="560" r="4"/>
+      <circle cx="430" cy="560" r="5"/>
+    </g>
+  </g>
+</svg>

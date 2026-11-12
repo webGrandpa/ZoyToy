@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
 import type { ProductVM } from '../lib/data'
 import { useI18n, useShop } from './Providers'
+import { stage } from '../lib/backdrop'
 
 /** Product photos with flaw hotspots and a magnifying loupe (docs/05 §11.4). */
 export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'title' | 'color'> & { art: ToyKind } }) {
@@ -29,7 +30,7 @@ export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'tit
   const cur = spot !== null ? spots.find((s) => s.n === spot) : null
   return (
     <div className="gallery">
-      <div className={`gallery-main tint-${p.color}`}>
+      <div className={`gallery-main ${stage(img?.cut, p.color)}`}>
         {img ? <img src={img.large} srcSet={img.srcSet} sizes="(max-width: 860px) 100vw, 560px" width={img.width} height={img.height} fetchPriority={i === 0 ? 'high' : 'auto'} alt={img.alt || p.title} /> : <ToyArt kind={p.art} className="gallery-art" />}
         {!img ? <span className="gallery-note">{m.product.noPhoto}</span> : null}
         {spots.map((s) => (
@@ -48,7 +49,7 @@ export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'tit
         ))}
         {cur && img ? (
           <div className="loupe" role="status">
-            <div className="loupe-lens" style={{ backgroundImage: `url(${img.large})`, backgroundPosition: `${cur.x}% ${cur.y}%` }} />
+            <div className={`loupe-lens${img.cut ? ` ${stage(img.cut, p.color, false)}` : ''}`} style={{ backgroundImage: `url(${img.large})`, backgroundPosition: `${cur.x}% ${cur.y}%` }} />
             <p>{cur.text}</p>
           </div>
         ) : null}
@@ -56,7 +57,7 @@ export function Gallery({ p }: { p: Pick<ProductVM, 'gallery' | 'defects' | 'tit
       {p.gallery.length > 1 ? (
         <div className="thumbs" role="tablist" aria-label={m.product.gallery.replace('{n}', '').replace('{total}', '')}>
           {p.gallery.map((g, n) => (
-            <button key={g.src + n} type="button" role="tab" aria-selected={n === i} aria-label={f(m.product.gallery, { n: n + 1, total: p.gallery.length })} onClick={() => { setI(n); setSpot(null) }}>
+            <button key={g.src + n} type="button" className={g.cut ? stage(g.cut, p.color, false) : undefined} role="tab" aria-selected={n === i} aria-label={f(m.product.gallery, { n: n + 1, total: p.gallery.length })} onClick={() => { setI(n); setSpot(null) }}>
               <img src={g.src} srcSet={g.srcSet} sizes="64px" alt="" loading="lazy" decoding="async" />
             </button>
           ))}

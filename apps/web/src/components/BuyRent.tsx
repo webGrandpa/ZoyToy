@@ -36,7 +36,7 @@ export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSett
   const ratio = save && p.retailPriceNew ? Math.min(1, save / p.retailPriceNew) : 0
 
   const add = (from: HTMLElement | null) => {
-    const ok = shop.add({ id: p.id, slug: p.slug, title: p.title, price: p.price, img: p.image?.src ?? null, art: p.art, color: p.color })
+    const ok = shop.add({ id: p.id, slug: p.slug, title: p.title, price: p.price, img: p.image?.src ?? null, cut: p.image?.cut ?? null, art: p.art, color: p.color })
     if (!ok) return shop.toast(f(m.product.added, { name: p.title }))
     flyToCart(from, () => {
       shop.toast(f(m.product.added, { name: p.title }))

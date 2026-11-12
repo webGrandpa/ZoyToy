@@ -376,6 +376,9 @@ export interface Media {
    * What the photo shows — for screen readers and search
    */
   alt: string;
+  backdrop?: ('auto' | 'sun' | 'bubble' | 'mint' | 'sky' | 'grape' | 'tangerine') | null;
+  scene?: ('halo' | 'stars' | 'plain') | null;
+  cutout?: boolean | null;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -407,6 +410,14 @@ export interface Media {
       filename?: string | null;
     };
     large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tile?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -859,6 +870,9 @@ export interface TagsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  backdrop?: T;
+  scene?: T;
+  cutout?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;
@@ -896,6 +910,16 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
         large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tile?:
           | T
           | {
               url?: T;

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Locale } from '../i18n/config'
 import type { Messages } from '../i18n'
 import { fmt } from '../i18n/format'
+import type { Cut } from '../lib/backdrop'
 
 // ---------- i18n ----------
 type I18n = { locale: Locale; m: Messages; f: (s: string, vars?: Record<string, string | number>) => string }
@@ -15,7 +16,7 @@ export const useI18n = () => {
 }
 
 // ---------- shop state: cart, toast, sound ----------
-export type CartItem = { id: number; slug: string; title: string; price: number; img?: string | null; art: string; color: string }
+export type CartItem = { id: number; slug: string; title: string; price: number; img?: string | null; cut?: Cut | null; art: string; color: string }
 type Shop = {
   items: CartItem[]
   add: (item: CartItem) => boolean

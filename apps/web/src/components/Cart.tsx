@@ -9,6 +9,7 @@ import { contactLinks } from '../lib/contact'
 import { IconGift, IconX } from './Icons'
 import { useI18n, useShop, type CartItem } from './Providers'
 import { confetti } from './confetti'
+import { stage } from '../lib/backdrop'
 
 type Contact = { whatsapp?: string | null; telegram?: string | null; instagram?: string | null; phone?: string | null }
 type Done = { number: string; text: string; items: CartItem[] }
@@ -120,7 +121,7 @@ export function CartDrawer({ contact }: { contact: Contact }) {
               <ul className="lines">
                 {shop.items.map((i) => (
                   <li key={i.id} className="line">
-                    <Link href={`/${locale}/p/${i.slug}`} className={`line-thumb tint-${i.color}`} onClick={() => shop.setCartOpen(false)}>
+                    <Link href={`/${locale}/p/${i.slug}`} className={`line-thumb ${stage(i.cut, i.color, false)}`} onClick={() => shop.setCartOpen(false)}>
                       {i.img ? <img src={i.img} alt="" /> : <ToyArt kind={i.art as ToyKind} />}
                     </Link>
                     <span className="line-title">{i.title}</span>
@@ -175,7 +176,7 @@ export function CartDrawer({ contact }: { contact: Contact }) {
               <ul className="lines mini">
                 {shop.items.map((i) => (
                   <li key={i.id} className="line">
-                    <span className={`line-thumb tint-${i.color}`}>{i.img ? <img src={i.img} alt="" /> : <ToyArt kind={i.art as ToyKind} />}</span>
+                    <span className={`line-thumb ${stage(i.cut, i.color, false)}`}>{i.img ? <img src={i.img} alt="" /> : <ToyArt kind={i.art as ToyKind} />}</span>
                     <span className="line-title">{i.title}</span>
                     <span className="line-price">{money(i.price)}</span>
                   </li>

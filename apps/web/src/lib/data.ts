@@ -5,9 +5,11 @@ import type { ToyKind } from '@zoytoy/ui/ToyArt'
 import { TOY_KINDS } from '@zoytoy/ui/ToyArt'
 import type { Locale } from '../i18n/config'
 import { payloadClient } from './payload'
+import { cutOf, type Cut } from './backdrop'
 
 export type Accent = 'grape' | 'sun' | 'sky' | 'bubble' | 'mint' | 'tangerine'
-export type Img = { src: string; srcSet: string; width: number; height: number; alt: string }
+/** cut: the photo's background was removed — it stands on a drawn backdrop (lib/backdrop.ts) */
+export type Img = { src: string; srcSet: string; width: number; height: number; alt: string; cut: Cut | null }
 export type Condition = Product['condition']
 
 export type CardVM = {
@@ -54,18 +56,24 @@ export function toImg(m: unknown): (Img & { large: string }) | null {
   if (!media?.url) return null
   const card = media.sizes?.card
   const large = media.sizes?.large
-  const thumb = media.sizes?.thumb
+  const cut = cutOf(media)
+  // a cut-out uses its own shape (tile) instead of the padded square, and never the square thumb — that
+  // is a centre crop and would cut a tall toy in half
+  const tile = cut && media.sizes?.tile?.url ? media.sizes.tile : null
+  const thumb = cut ? null : media.sizes?.thumb
+  const small = tile ?? card
   const parts = [
     thumb?.url && thumb.width ? `${thumb.url} ${thumb.width}w` : null,
-    card?.url && card.width ? `${card.url} ${card.width}w` : null,
+    small?.url && small.width ? `${small.url} ${small.width}w` : null,
     large?.url && large.width ? `${large.url} ${large.width}w` : null,
   ].filter(Boolean)
   return {
-    src: card?.url ?? media.url,
+    src: small?.url ?? media.url,
     srcSet: parts.join(', '),
     width: card?.width ?? media.width ?? 600,
     height: card?.height ?? media.height ?? 600,
     alt: media.alt ?? '',
+    cut,
     large: large?.url ?? media.url,
   }
 }

@@ -8,6 +8,7 @@ import { money } from '../i18n/format'
 import type { CardVM } from '../lib/data'
 import { ConditionBadge } from './Condition'
 import { useI18n, useShop } from './Providers'
+import { stage } from '../lib/backdrop'
 
 const DURATION = 4500
 
@@ -73,7 +74,7 @@ export function Stories({ items }: { items: CardVM[] }) {
             }}
           >
             <span className="story-ring">
-              <span className={`tint-${p.color}`}>{p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="80px" alt="" loading="lazy" decoding="async" /> : <ToyArt kind={p.art} />}</span>
+              <span className={stage(p.image?.cut, p.color, false)}>{p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="80px" alt="" loading="lazy" decoding="async" /> : <ToyArt kind={p.art} />}</span>
             </span>
             <small>{p.title}</small>
           </button>

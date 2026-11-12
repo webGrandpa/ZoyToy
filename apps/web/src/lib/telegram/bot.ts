@@ -38,6 +38,7 @@ import { checkConnectToken, connectToken, signLink } from './secret'
 import { asLang, intlPhone, money, type Lang } from './templates'
 import { siteUrl } from '../site'
 import { saleTotals } from '../store'
+import { ACCENT_HEX, cutOf, soften, tintOf } from '../backdrop'
 
 const OPEN = ['requested', 'confirmed', 'paid', 'shipped']
 const DAY = 24 * 3600 * 1000
@@ -165,7 +166,11 @@ async function orderPhoto(payload: Payload, order: Order) {
   const url = path.startsWith('http') ? path : `${siteUrl() ?? `http://127.0.0.1:${process.env.PORT || 3000}`}${path}`
   const res = await fetch(url, { signal: AbortSignal.timeout(6000) })
   if (!res.ok) return null
-  const data = await sharp(Buffer.from(await res.arrayBuffer())).flatten({ background: '#ffffff' }).jpeg({ quality: 86 }).toBuffer()
+  // a cut-out (background removed) goes on its backdrop colour, like on the site; other photos on white
+  const cut = cutOf(media)
+  const category = product?.categories?.find((c) => typeof c === 'object')
+  const background = cut ? soften(ACCENT_HEX[tintOf(cut, typeof category === 'object' ? category?.color : null)], 0.3) : '#ffffff'
+  const data = await sharp(Buffer.from(await res.arrayBuffer())).flatten({ background }).jpeg({ quality: 86 }).toBuffer()
   return { data, name: 'zoytoy.jpg', type: 'image/jpeg' }
 }
 

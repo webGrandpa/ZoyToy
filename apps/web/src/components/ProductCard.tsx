@@ -9,6 +9,7 @@ import { ConditionBadge, ConditionScale } from './Condition'
 import { IconPlus } from './Icons'
 import { useI18n, useShop } from './Providers'
 import { flyToCart } from './fly'
+import { stage } from '../lib/backdrop'
 
 export function ProductCard({ p }: { p: CardVM }) {
   const { locale, m, f } = useI18n()
@@ -27,7 +28,7 @@ export function ProductCard({ p }: { p: CardVM }) {
     el.style.transform = `perspective(800px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 9).toFixed(2)}deg) translateY(-4px)`
   }
   const add = () => {
-    const ok = shop.add({ id: p.id, slug: p.slug, title: p.title, price: p.price, img: p.image?.src ?? null, art: p.art, color: p.color })
+    const ok = shop.add({ id: p.id, slug: p.slug, title: p.title, price: p.price, img: p.image?.src ?? null, cut: p.image?.cut ?? null, art: p.art, color: p.color })
     if (!ok) return shop.toast(f(m.product.added, { name: p.title }))
     flyToCart(imgRef.current, () => {
       shop.toast(f(m.product.added, { name: p.title }))
@@ -46,7 +47,7 @@ export function ProductCard({ p }: { p: CardVM }) {
       <div className="card-inner">
         <div className="face front" aria-hidden={flipped}>
           <div className="card-media">
-            <Link ref={imgRef} href={href} className={`card-img tint-${p.color}`} tabIndex={-1} aria-hidden="true">
+            <Link ref={imgRef} href={href} className={`card-img ${stage(p.image?.cut, p.color)}`} tabIndex={-1} aria-hidden="true">
               {p.image ? <img src={p.image.src} srcSet={p.image.srcSet} sizes="(max-width: 600px) 50vw, 300px" width={p.image.width} height={p.image.height} alt="" loading="lazy" decoding="async" /> : <ToyArt kind={p.art} className="card-art" />}
             </Link>
             <div className="badges">

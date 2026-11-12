@@ -2,7 +2,8 @@ import type { Endpoint } from 'payload'
 import { refreshStorefront } from '../lib/refresh'
 import { releaseExpired } from '../collections/Orders'
 import { botToken } from '../lib/telegram/api'
-import { callTarget, handleUpdate, sendDigest } from '../lib/telegram/bot'
+import { callTarget, connection, handleUpdate, sendDigest, sendTest } from '../lib/telegram/bot'
+import { inTeam, isOwner } from '../lib/access'
 import { sameSecret, signLink, webhookSecret } from '../lib/telegram/secret'
 
 /** Telegram → POST /api/telegram/webhook (registered by scripts/telegram-setup.ts with the derived secret). */
@@ -63,4 +64,26 @@ export const dailyJob: Endpoint = {
   },
 }
 
-export const telegramEndpoints = [telegramWebhook, telegramCall, dailyJob]
+const forbidden = () => Response.json({ error: 'forbidden' }, { status: 403 })
+
+/** Admin → Site settings → Telegram: bot and chat state, plus fresh one-tap connect links (team only, never cached). */
+export const telegramStatus: Endpoint = {
+  path: '/telegram/status',
+  method: 'get',
+  handler: async (req) => {
+    if (!inTeam(req.user)) return forbidden()
+    return Response.json(await connection(req.payload, { links: isOwner(req.user) }), { headers: { 'Cache-Control': 'no-store' } })
+  },
+}
+
+/** Admin → “send a test message” to the connected chat (team only). */
+export const telegramTest: Endpoint = {
+  path: '/telegram/test',
+  method: 'post',
+  handler: async (req) => {
+    if (!inTeam(req.user)) return forbidden()
+    return Response.json(await sendTest(req.payload))
+  },
+}
+
+export const telegramEndpoints = [telegramWebhook, telegramCall, telegramStatus, telegramTest, dailyJob]

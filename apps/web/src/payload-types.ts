@@ -1082,7 +1082,7 @@ export interface SiteSetting {
    */
   games?: ('toy-drop' | 'memory' | 'whack' | 'stack')[] | null;
   /**
-   * Send /start to the bot in Telegram — it replies with this number. With staff: add the bot to a group and send /start there. Only this chat can manage orders.
+   * The “Connect” button above fills this in by itself. By hand: send /start to the bot — it replies with this number (group numbers start with “-”). Only this chat can manage orders.
    */
   telegramChatId?: string | null;
   telegramDigest?: boolean | null;

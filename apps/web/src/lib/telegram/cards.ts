@@ -212,6 +212,19 @@ export const setupText = (chatId: number | string) =>
     'შემდეგ აქ მოვა ყველა ახალი შეკვეთა.',
   ].join('\n')
 
+/** Sent into the chat that was just connected from the admin's one-tap link. */
+export const connectedText = (group: boolean) =>
+  [
+    `✅ <b>${group ? 'ჯგუფი დაკავშირდა' : 'ჩატი დაკავშირდა'}</b>`,
+    'ახალი შეკვეთები აქ მოვა ფოტოთი და ღილაკებით.',
+    '',
+    HELP,
+  ].join('\n')
+
+export const expiredLinkText = 'ამ ბმულს ვადა გაუვიდა. ადმინში → საიტის პარამეტრები → Telegram ხელახლა დააჭირე „დაკავშირებას“.'
+
+export const testText = '🧪 სატესტო შეტყობინება ადმინიდან — კავშირი მუშაობს ✅'
+
 export function rewardCard(code: string, r: RewardData | null) {
   const state = rewardState(r)
   const lines = [`🎟 <b>${esc(r?.code ?? code.toUpperCase())}</b>`, state.line]

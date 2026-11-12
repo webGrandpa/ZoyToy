@@ -136,6 +136,25 @@ html[data-theme="dark"] .zt-tile, html[data-theme="dark"] .zt-home__recent { bor
 .zt-msg__text p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 768px) { .zt-msg__btn { min-height: 44px; font-size: 13.5px; } }
 
+/* ---------- Site settings → Telegram: connection box (TelegramConnect.tsx) ---------- */
+.zt-tg { display: grid; gap: 10px; margin: 0 0 22px; padding: 14px 16px; border: 3px solid #1F1A3D; border-radius: 18px; background: var(--theme-elevation-0); box-shadow: 0 4px 0 #1F1A3D; }
+.zt-tg p { margin: 0; }
+.zt-tg__title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-weight: 800; font-size: 15px; }
+.zt-tg__title a { font-weight: 600; font-size: 13px; color: #6B4BFF; }
+.zt-tg__state { padding: 10px 12px; border-radius: 12px; background: #E3FBF2; font-size: 14px; line-height: 1.45; font-weight: 600; }
+.zt-tg__state--bad { background: #FFF1C9; box-shadow: inset 0 0 0 2px #FFC83D; }
+.zt-tg__btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.zt-tg__btns .zt-msg__btn { min-height: 44px; font-size: 13.5px; }
+.zt-tg__btns .zt-msg__btn:disabled { opacity: .55; cursor: progress; }
+.zt-tg__note { font-size: 13.5px; font-weight: 700; color: #0F8A5F; }
+.zt-tg__note--bad { color: #B4321F; }
+.zt-tg__how { font-size: 12.5px; line-height: 1.45; opacity: .75; }
+html[data-theme='dark'] .zt-tg__state { background: #123d31; }
+html[data-theme='dark'] .zt-tg__state--bad { background: #3d3212; }
+html[data-theme='dark'] .zt-tg__note { color: #6EE7B7; }
+html[data-theme='dark'] .zt-tg__note--bad { color: #FCA5A5; }
+html[data-theme='dark'] .zt-tg__title a { color: #B9A8FF; }
+
 /* ---------- product sidebar: label + counter sale ---------- */
 .zt-ptools { display: grid; gap: 6px; margin: 0 0 18px; }
 .zt-ptools .zt-msg__btn { min-height: 42px; font-size: 13.5px; }

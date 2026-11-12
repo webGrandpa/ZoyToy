@@ -2,19 +2,22 @@
  * The shop's Telegram bot (docs/08 §3.2): new orders arrive with a photo and buttons, the owner moves
  * them along (confirm → paid → shipped/picked up, or cancel) and messages the customer in one tap.
  * Product statuses follow through the Orders hooks. Only the shop's chat — Site settings → Telegram,
- * or TELEGRAM_CHAT_ID — can use it; any other chat just learns its own id from /start.
+ * or TELEGRAM_CHAT_ID — can use it; any other chat just learns its own id from /start. The admin's
+ * one-tap link (t.me/<bot>?start=<signed token>) connects a chat without copying its number.
  */
 import { after } from 'next/server'
 import type { Payload } from 'payload'
 import sharp from 'sharp'
 import type { Media, Order, Reward, SiteSetting } from '../../payload-types'
-import { botToken, tg, tgPhoto, unchanged, type Keyboard, type TgMessage, type TgUpdate, type TgUser } from './api'
+import { botToken, tg, TelegramError, tgPhoto, unchanged, type Keyboard, type TgChat, type TgMessage, type TgUpdate, type TgUser } from './api'
 import {
   cancelKeyboard,
   canMove,
+  connectedText,
   customerMessage,
   digestCard,
   esc,
+  expiredLinkText,
   HELP,
   openOrdersCard,
   orderCard,
@@ -26,11 +29,12 @@ import {
   rewardState,
   setupText,
   STATUS,
+  testText,
   type ListedOrder,
   type OrderCardData,
   type RewardData,
 } from './cards'
-import { signLink } from './secret'
+import { checkConnectToken, connectToken, signLink } from './secret'
 import { asLang, intlPhone, money, type Lang } from './templates'
 import { siteUrl } from '../site'
 import { saleTotals } from '../store'
@@ -57,6 +61,69 @@ const settings = (payload: Payload, lang: Lang = 'ka') =>
 export async function ownerChat(payload: Payload, s?: SiteSetting) {
   const saved = (s ?? (await settings(payload))).telegramChatId?.trim()
   return saved || process.env.TELEGRAM_CHAT_ID?.trim() || null
+}
+
+const saveOwnerChat = (payload: Payload, id: number | string) =>
+  payload.updateGlobal({ slug: 'site-settings', data: { telegramChatId: String(id) }, overrideAccess: true })
+
+const isGroup = (chat: Pick<TgChat, 'type'>) => chat.type !== 'private'
+
+/** What went wrong with the saved chat, in words the admin can act on. */
+export type ChatProblem = 'not_found' | 'blocked' | 'removed' | 'moved' | 'other'
+export function chatProblem(e: unknown): ChatProblem {
+  const d = e instanceof TelegramError ? e.description : String(e)
+  if (/chat not found|user not found|PEER_ID_INVALID/i.test(d)) return 'not_found'
+  if (/blocked by the user|user is deactivated/i.test(d)) return 'blocked'
+  if (/kicked|not a member|was deleted/i.test(d)) return 'removed'
+  if (/upgraded to a supergroup/i.test(d)) return 'moved'
+  return 'other'
+}
+
+export type Connection = {
+  configured: boolean
+  bot?: string
+  links?: { private: string; group: string }
+  chat?: { id: string; name: string; group: boolean } | null
+  problem?: ChatProblem | 'token'
+}
+
+let botName: string | null = null
+async function botUsername() {
+  if (!botName) botName = (await tg<{ username?: string }>('getMe', {}).catch(() => null))?.username ?? null
+  return botName
+}
+
+/**
+ * Admin → Site settings → Telegram: is the bot set up, which chat it writes to, and — for those who may
+ * change Site settings (admins) — fresh one-tap connect links.
+ */
+export async function connection(payload: Payload, opts: { links: boolean }): Promise<Connection> {
+  if (!botToken()) return { configured: false }
+  const bot = await botUsername()
+  if (!bot) return { configured: true, problem: 'token' }
+  const token = connectToken()
+  const links = opts.links ? { private: `https://t.me/${bot}?start=${token}`, group: `https://t.me/${bot}?startgroup=${token}` } : undefined
+  const id = await ownerChat(payload)
+  if (!id) return { configured: true, bot, links, chat: null }
+  try {
+    const c = await tg<TgChat>('getChat', { chat_id: id })
+    const name = c.title || [c.first_name, c.last_name].filter(Boolean).join(' ') || (c.username ? `@${c.username}` : id)
+    return { configured: true, bot, links, chat: { id, name, group: isGroup(c) } }
+  } catch (e) {
+    return { configured: true, bot, links, chat: { id, name: '', group: id.startsWith('-') }, problem: chatProblem(e) }
+  }
+}
+
+/** The admin's “send a test message” button. */
+export async function sendTest(payload: Payload): Promise<{ ok: true } | { ok: false; problem: ChatProblem | 'no_chat' }> {
+  const id = await ownerChat(payload)
+  if (!id) return { ok: false, problem: 'no_chat' }
+  try {
+    await send(id, testText)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, problem: chatProblem(e) }
+  }
 }
 
 const toCard = (o: Order): OrderCardData => ({ ...o, items: o.items ?? [] })
@@ -241,8 +308,19 @@ export async function handleUpdate(payload: Payload, update: TgUpdate) {
   if (update.callback_query) return onButton(payload, update.callback_query, owner)
 
   const msg = update.message
+  // Telegram turned the shop's group into a supergroup: follow it to its new id
+  if (msg?.migrate_from_chat_id && owner && String(msg.migrate_from_chat_id) === owner) {
+    await saveOwnerChat(payload, msg.chat.id)
+    return
+  }
   if (!msg?.text) return
   const cmd = parseCommand(msg.text)
+  // the admin's one-tap link: /start <signed token> connects this chat (private or group)
+  if (cmd?.command === 'start' && cmd.args) {
+    if (!checkConnectToken(cmd.args)) return send(msg.chat.id, expiredLinkText)
+    await saveOwnerChat(payload, msg.chat.id)
+    return send(msg.chat.id, connectedText(isGroup(msg.chat)))
+  }
   if (!owner || String(msg.chat.id) !== owner) {
     // strangers only learn their chat id, which the owner pastes into the admin to connect a chat
     if (cmd?.command === 'start') await send(msg.chat.id, setupText(msg.chat.id))

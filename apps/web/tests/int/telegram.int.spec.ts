@@ -5,8 +5,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import type { Order } from '@/payload-types'
 import { canMove, digestCard, orderCard, orderKeyboard, parseCallback, parseCommand, rewardState, type OrderCardData } from '@/lib/telegram/cards'
 import { fillTemplate, intlPhone, money, templateFor, templateText, whatsappLink } from '@/lib/telegram/templates'
-import { sameSecret, webhookSecret } from '@/lib/telegram/secret'
-import { handleUpdate, notifyNewOrder, sendDigest } from '@/lib/telegram/bot'
+import { checkConnectToken, connectToken, sameSecret, webhookSecret } from '@/lib/telegram/secret'
+import { chatProblem, connection, handleUpdate, notifyNewOrder, ownerChat, sendDigest } from '@/lib/telegram/bot'
+import { TelegramError } from '@/lib/telegram/api'
 
 const order = (over: Partial<OrderCardData> = {}): OrderCardData => ({
   id: 7,
@@ -120,6 +121,28 @@ describe('order cards and buttons', () => {
     expect(webhookSecret('token-b')).not.toBe(a)
     expect(sameSecret(a, webhookSecret('token-a'))).toBe(true)
     expect(sameSecret('short', a)).toBe(false)
+  })
+
+  it('makes one-tap connect links that expire and cannot be forged', () => {
+    const now = Date.UTC(2026, 10, 12, 9, 0)
+    const t = connectToken(now)
+    expect(t).toMatch(/^c[0-9a-z]+_[A-Za-z0-9_-]{22}$/)
+    expect(t.length).toBeLessThanOrEqual(64) // Telegram's deep-link limit
+    expect(checkConnectToken(t, now + 29 * 60_000)).toBe(true)
+    expect(checkConnectToken(t, now + 31 * 60_000)).toBe(false)
+    expect(checkConnectToken(t, now - 2 * 60_000)).toBe(false)
+    expect(checkConnectToken(`${t.slice(0, -1)}${t.endsWith('A') ? 'B' : 'A'}`, now)).toBe(false)
+    expect(checkConnectToken(t.replace(/^c[0-9a-z]+/, `c${(Math.floor(now / 60_000) + 1).toString(36)}`), now + 60_000)).toBe(false)
+    expect(checkConnectToken('hello', now)).toBe(false)
+  })
+
+  it('names what went wrong with the shop chat', () => {
+    const err = (d: string) => new TelegramError('sendMessage', d)
+    expect(chatProblem(err('Bad Request: chat not found'))).toBe('not_found')
+    expect(chatProblem(err('Forbidden: bot was blocked by the user'))).toBe('blocked')
+    expect(chatProblem(err('Forbidden: bot was kicked from the supergroup chat'))).toBe('removed')
+    expect(chatProblem(err('Bad Request: group chat was upgraded to a supergroup chat'))).toBe('moved')
+    expect(chatProblem(err('Too Many Requests: retry after 5'))).toBe('other')
   })
 })
 
@@ -235,5 +258,34 @@ describe('bot against the database (fake Telegram)', () => {
     expect(String(last('sendMessage')?.text)).toContain('ვერ მოიძებნა')
     expect(await sendDigest(payload, { force: true })).toBe('sent')
     expect(String(last('sendMessage')?.text)).toContain('დილა მშვიდობისა')
+  })
+
+  // last in this block: it moves the shop chat around and puts it back
+  it('connects a chat from the admin link, refuses a stale one, and follows a group to its supergroup id', async () => {
+    const before = (await payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: true })).telegramChatId ?? null
+    try {
+      await say(`/start c1_${'x'.repeat(22)}`, 5150)
+      expect(last('sendMessage')?.chat_id).toBe(5150)
+      expect(String(last('sendMessage')?.text)).toContain('ვადა გაუვიდა')
+      expect(await ownerChat(payload)).toBe(before || String(OWNER))
+
+      const group = { id: -100777, type: 'supergroup', title: 'Zoy team' }
+      await handleUpdate(payload, { message: { message_id: 6, chat: group, text: `/start@zoytoy_test_bot ${connectToken()}` } })
+      expect(await ownerChat(payload)).toBe('-100777')
+      expect(String(last('sendMessage')?.text)).toContain('ჯგუფი დაკავშირდა')
+
+      await handleUpdate(payload, { message: { message_id: 1, chat: { id: -100888, type: 'supergroup' }, migrate_from_chat_id: -100999 } })
+      expect(await ownerChat(payload)).toBe('-100777') // someone else's group moving changes nothing
+      await handleUpdate(payload, { message: { message_id: 1, chat: { id: -100888, type: 'supergroup' }, migrate_from_chat_id: -100777 } })
+      expect(await ownerChat(payload)).toBe('-100888')
+
+      const admin = await connection(payload, { links: true })
+      expect(admin).toMatchObject({ configured: true, bot: 'zoytoy_test_bot', chat: { id: '-100888' } })
+      expect(admin.links?.private).toMatch(/^https:\/\/t\.me\/zoytoy_test_bot\?start=c/)
+      expect(admin.links?.group).toMatch(/\?startgroup=c/)
+      expect((await connection(payload, { links: false })).links).toBeUndefined()
+    } finally {
+      await payload.updateGlobal({ slug: 'site-settings', data: { telegramChatId: before }, overrideAccess: true })
+    }
   })
 })

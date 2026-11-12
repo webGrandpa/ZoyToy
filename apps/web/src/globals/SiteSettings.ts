@@ -101,6 +101,8 @@ export const SiteSettings: GlobalConfig = {
             'New orders reach the bot with a photo and buttons (confirm, paid, shipped, cancel, WhatsApp, call). Setup: docs/09.',
           ),
           fields: [
+            // status from Telegram itself, one-tap connect, test message (components/admin/TelegramConnect.tsx)
+            { name: 'telegramConnect', type: 'ui', admin: { components: { Field: '/components/admin/TelegramConnect#TelegramConnect' } } },
             {
               name: 'telegramChatId',
               type: 'text',
@@ -111,9 +113,9 @@ export const SiteSettings: GlobalConfig = {
                 !value || /^-?\d{5,20}$/.test(String(value).trim()) || chatIdError[asLang(req.i18n?.language)],
               admin: {
                 description: L(
-                  'ბოტს Telegram-ში მისწერე /start — ის ამ ნომრით გიპასუხებს. თანამშრომლებთან ერთად: დაამატე ბოტი ჯგუფში და იქ დაწერე /start. მხოლოდ ამ ჩატს შეუძლია შეკვეთების მართვა.',
-                  'Напишите боту /start в Telegram — он ответит этим номером. Вместе с сотрудниками: добавьте бота в группу и напишите /start там. Управлять заказами может только этот чат.',
-                  'Send /start to the bot in Telegram — it replies with this number. With staff: add the bot to a group and send /start there. Only this chat can manage orders.',
+                  'ზემოთ „დაკავშირების“ ღილაკი ამას თავისით ავსებს. ხელით: ბოტს მისწერე /start — ის ამ ნომრით გიპასუხებს (ჯგუფის ნომერი „-“-ით იწყება). მხოლოდ ამ ჩატს შეუძლია შეკვეთების მართვა.',
+                  'Кнопка «Подключить» выше заполняет это сама. Вручную: напишите боту /start — он ответит этим номером (номер группы начинается с «-»). Управлять заказами может только этот чат.',
+                  'The “Connect” button above fills this in by itself. By hand: send /start to the bot — it replies with this number (group numbers start with “-”). Only this chat can manage orders.',
                 ),
               },
             },

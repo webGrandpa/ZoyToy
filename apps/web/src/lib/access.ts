@@ -4,6 +4,10 @@ type Role = 'admin' | 'staff'
 const roleOf = (user: unknown): Role | undefined =>
   (user as { roles?: Role[] } | null)?.roles?.includes('admin') ? 'admin' : (user as { roles?: Role[] } | null)?.roles?.includes('staff') ? 'staff' : undefined
 
+/** For custom endpoints, which get the user but no access function. */
+export const inTeam = (user: unknown) => Boolean(roleOf(user))
+export const isOwner = (user: unknown) => roleOf(user) === 'admin'
+
 export const isAdmin: Access = ({ req }) => roleOf(req.user) === 'admin'
 export const isTeam: Access = ({ req }) => Boolean(roleOf(req.user))
 export const isAdminField: FieldAccess = ({ req }) => roleOf(req.user) === 'admin'

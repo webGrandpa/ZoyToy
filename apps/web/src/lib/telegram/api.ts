@@ -42,8 +42,9 @@ export type InlineButton = { text: string; callback_data?: string; url?: string 
 export type Keyboard = InlineButton[][]
 
 export type TgUser = { id: number; first_name?: string; username?: string }
-export type TgChat = { id: number; type: string; title?: string }
-export type TgMessage = { message_id: number; chat: TgChat; from?: TgUser; text?: string; caption?: string; photo?: unknown[] }
+export type TgChat = { id: number; type: string; title?: string; first_name?: string; last_name?: string; username?: string }
+// migrate_from_chat_id: the first message of a group that Telegram turned into a supergroup (the chat id changes)
+export type TgMessage = { message_id: number; chat: TgChat; from?: TgUser; text?: string; caption?: string; photo?: unknown[]; migrate_from_chat_id?: number }
 export type TgUpdate = {
   update_id?: number
   message?: TgMessage

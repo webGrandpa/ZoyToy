@@ -3,7 +3,7 @@ import type { ToyKind } from '@zoytoy/ui/ToyArt'
 import type { Accent } from '../../lib/data'
 import { BOUQUETS, HERO, themeFor } from './Bouquet'
 
-type Cat = { id: number; title: string; slug: string; color: Accent; icon: ToyKind }
+type Cat = { id: number; title: string; slug: string; color: Accent; icon: ToyKind; theme?: string | null }
 
 /**
  * Where the six land: angle from upright, distance from the box opening, stacking order. Five make a
@@ -28,7 +28,7 @@ export function CategoryBoxes({ locale, items }: { locale: string; items: Cat[] 
   return (
     <div className="boxes">
       {items.map((c, i) => {
-        const theme = themeFor(c.slug, c.icon)
+        const theme = themeFor(c.slug, c.icon, c.theme)
         const Hero = HERO[theme]
         return (
           <Link

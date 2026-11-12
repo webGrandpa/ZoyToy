@@ -2,6 +2,8 @@ import { APIError, type CollectionConfig, type CollectionBeforeChangeHook } from
 import type { Product } from '../payload-types'
 import { isAdminField, isTeam, publishedOrTeam } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
+import { listFilters } from '../lib/listFilters'
 import { slugField } from '../fields/slug'
 import { highestNumber, lockNumbers, OPEN_ORDER, PAID_ORDER } from '../lib/stock'
 
@@ -60,14 +62,17 @@ export const Products: CollectionConfig = {
   labels: { singular: L('ნივთი', 'Товар', 'Item'), plural: L('ნივთები', 'Товары', 'Items') },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'sku', 'condition', 'price', 'status', 'updatedAt'],
+    defaultColumns: ['photo', 'title', 'sku', 'price', 'status', 'categories', 'updatedAt'],
     listSearchableFields: ['title', 'sku'],
-    group: L('კატალოგი', 'Каталог', 'Catalogue'),
+    group: GROUP.catalogue,
+    components: listFilters('products'),
   },
   access: { read: publishedOrTeam, create: isTeam, update: isTeam, delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')) },
   versions: { maxPerDoc: 25 },
   hooks: { beforeChange: [assignSku, guardStatus, stampStatus] },
   fields: [
+    // the main photo as the first column of the items list (nothing inside the form)
+    { name: 'photo', type: 'ui', label: L('ფოტო', 'Фото', 'Photo'), admin: { components: { Cell: '/components/admin/ProductThumb#ProductThumbCell', Field: '/components/admin/ProductThumb#Nothing' } } },
     // ---------- sidebar ----------
     {
       name: 'status',
@@ -100,23 +105,10 @@ export const Products: CollectionConfig = {
         {
           label: L('ძირითადი', 'Основное', 'Basics'),
           fields: [
-            { name: 'title', type: 'text', localized: true, required: true, label: L('სახელი', 'Название', 'Title') },
+            { name: 'title', type: 'text', localized: true, required: true, label: L('სახელი', 'Название', 'Title'), admin: { components: { Cell: '/components/admin/ProductThumb#LinkCell' } } },
             { name: 'shortDescription', type: 'textarea', localized: true, label: L('მოკლე აღწერა', 'Краткое описание', 'Short description'), maxLength: 220 },
             { name: 'description', type: 'richText', localized: true, label: L('სრული აღწერა', 'Полное описание', 'Full description') },
-            {
-              type: 'row',
-              fields: [
-                { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true, required: true, label: L('კატეგორიები', 'Категории', 'Categories') },
-                { name: 'franchises', type: 'relationship', relationTo: 'franchises', hasMany: true, label: L('ფრენჩაიზები', 'Франшизы', 'Franchises') },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                { name: 'brand', type: 'relationship', relationTo: 'brands', label: L('ბრენდი', 'Бренд', 'Brand') },
-                { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true, label: L('თეგები', 'Теги', 'Tags') },
-              ],
-            },
+            { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true, required: true, label: L('კატეგორიები', 'Категории', 'Categories') },
             {
               type: 'row',
               fields: [

@@ -117,8 +117,6 @@ export default async function ProductPage({ params }: Params) {
             <dl className="specs zt-sticker">
               <h2>{m.product.details}</h2>
               <div><dt>{m.product.sku}</dt><dd>{p.sku}</dd></div>
-              {p.brand ? <div><dt>{m.product.brand}</dt><dd>{p.brand}</dd></div> : null}
-              {p.franchises.length ? <div><dt>{m.product.franchise}</dt><dd>{p.franchises.join(', ')}</dd></div> : null}
               {p.categories.length ? <div><dt>{m.product.category}</dt><dd>{p.categories.map((c) => c.title).join(', ')}</dd></div> : null}
               {age ? <div><dt>{m.product.age}</dt><dd>{age}</dd></div> : null}
               {p.origin ? <div><dt>{m.product.origin}</dt><dd>{m.origin[p.origin]}</dd></div> : null}

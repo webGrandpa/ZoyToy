@@ -3,7 +3,8 @@ import { anyone, isTeam } from '../lib/access'
 import { BACKDROP_LABEL, BACKDROPS, SCENE_LABEL, SCENES } from '../lib/backdrop'
 import { inspectCutout } from '../lib/cutout'
 import { L } from '../lib/labels'
-import { refreshStorefront } from '../lib/refresh'
+import { GROUP } from '../lib/groups'
+import { listFilters } from '../lib/listFilters'
 
 /**
  * A new file: a photo with its background removed is marked as a cut-out (it then stands on the chosen
@@ -36,14 +37,10 @@ const markCutout: CollectionBeforeOperationHook = async ({ args, operation, req 
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: { singular: L('ფოტო', 'Фото', 'Photo'), plural: L('ფოტოები', 'Фото', 'Photos') },
-  admin: { group: L('კატალოგი', 'Каталог', 'Catalogue') },
+  admin: { group: GROUP.catalogue, components: listFilters('media') },
   access: { read: anyone, create: isTeam, update: isTeam, delete: isTeam },
-  hooks: {
-    beforeOperation: [markCutout],
-    // a new backdrop or photo shows on cached pages right away
-    afterChange: [() => refreshStorefront()],
-    afterDelete: [() => refreshStorefront()],
-  },
+  // payload.config wraps Media in withRefresh: a new backdrop or photo shows on cached pages right away
+  hooks: { beforeOperation: [markCutout] },
   fields: [
     {
       name: 'alt',

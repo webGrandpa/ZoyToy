@@ -71,9 +71,6 @@ export interface Config {
     'store-sales': StoreSale;
     products: Product;
     categories: Category;
-    franchises: Franchise;
-    brands: Brand;
-    tags: Tag;
     media: Media;
     locations: Location;
     'game-campaigns': GameCampaign;
@@ -91,9 +88,6 @@ export interface Config {
     'store-sales': StoreSalesSelect<false> | StoreSalesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
-    franchises: FranchisesSelect<false> | FranchisesSelect<true>;
-    brands: BrandsSelect<false> | BrandsSelect<true>;
-    tags: TagsSelect<false> | TagsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     'game-campaigns': GameCampaignsSelect<false> | GameCampaignsSelect<true>;
@@ -149,17 +143,41 @@ export interface UserAuthOperations {
  */
 export interface Order {
   id: number;
+  /**
+   * Filled in automatically
+   */
   number?: string | null;
   /**
    * “Paid” marks items sold, “Cancelled” puts them back on the shelf
    */
   status: 'requested' | 'confirmed' | 'paid' | 'shipped' | 'completed' | 'cancelled' | 'expired';
+  /**
+   * Held for the buyer until then; afterwards it goes back on sale by itself.
+   */
   reservedUntil?: string | null;
+  /**
+   * Buyer’s name.
+   */
   name: string;
+  /**
+   * For WhatsApp / calls.
+   */
   phone: string;
+  /**
+   * Where it goes.
+   */
   city?: string | null;
+  /**
+   * How it is handed over: pickup, courier, post, bus.
+   */
   delivery?: ('pickup' | 'courier' | 'post' | 'bus') | null;
+  /**
+   * How they pay.
+   */
   payment?: ('cash' | 'transfer' | 'link') | null;
+  /**
+   * Tracking number if sent by post — passed on to the buyer.
+   */
   tracking?: string | null;
   items?:
     | {
@@ -170,14 +188,38 @@ export interface Order {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Sum before the discount.
+   */
   total?: number | null;
   discountPercent?: number | null;
+  /**
+   * To pay after the reward discount.
+   */
   payable?: number | null;
+  /**
+   * Gift wrapping.
+   */
   gift?: boolean | null;
+  /**
+   * The game code (ZOY-…), if the buyer entered one.
+   */
   rewardCode?: string | null;
+  /**
+   * The buyer’s language — ready messages open in it.
+   */
   locale?: ('ka' | 'ru' | 'en') | null;
+  /**
+   * Text for the card.
+   */
   giftNote?: string | null;
+  /**
+   * The buyer’s comment.
+   */
   comment?: string | null;
+  /**
+   * Internal notes — the buyer never sees them.
+   */
   notes?: string | null;
   ipHash?: string | null;
   updatedAt: string;
@@ -189,6 +231,9 @@ export interface Order {
  */
 export interface Product {
   id: number;
+  /**
+   * “Draft” — hidden. “Published” — visible and for sale. “Reserved” and “Sold” follow orders by themselves.
+   */
   status: 'draft' | 'published' | 'reserved' | 'sold' | 'archived';
   /**
    * Automatic, for the QR label
@@ -198,10 +243,25 @@ export interface Product {
    * Leave empty to generate automatically
    */
   slug?: string | null;
+  /**
+   * Filled in automatically
+   */
   publishedAt?: string | null;
+  /**
+   * Filled in automatically
+   */
   soldAt?: string | null;
+  /**
+   * As a buyer would search: what it is + the key feature, e.g. “Wooden train with tracks”.
+   */
   title: string;
+  /**
+   * 1–2 sentences under the title (up to 220 characters).
+   */
   shortDescription?: string | null;
+  /**
+   * Details for the item page: what is in the box, how it works, size.
+   */
   description?: {
     root: {
       type: string;
@@ -217,35 +277,77 @@ export interface Product {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * One or more. The first sets the card colour and “similar items”.
+   */
   categories: (number | Category)[];
-  franchises?: (number | Franchise)[] | null;
-  brand?: (number | null) | Brand;
-  tags?: (number | Tag)[] | null;
   /**
    * e.g. 3 years = 36
    */
   ageMinMonths?: number | null;
+  /**
+   * Empty — no upper limit.
+   */
   ageMaxMonths?: number | null;
+  /**
+   * Where it came from — shown in the filter and on the page.
+   */
   origin?: ('usa' | 'europe' | 'other') | null;
+  /**
+   * From “new” to “fair”. Shown as a coloured badge and a scale.
+   */
   condition: 'new' | 'new_open_box' | 'like_new' | 'very_good' | 'good' | 'fair';
+  /**
+   * What the buyer should know about the condition — briefly.
+   */
   conditionNotes?: string | null;
   /**
    * Each with a short note and a spot on the photo (X/Y in %) for the loupe
    */
   defects?:
     | {
+        /**
+         * e.g. “Small scratch on the left wing”.
+         */
         text: string;
+        /**
+         * The photo that shows it. Empty — the main photo.
+         */
         photo?: (number | null) | Media;
+        /**
+         * Where on the photo: 0 — left edge, 100 — right.
+         */
         x?: number | null;
+        /**
+         * 0 — top edge, 100 — bottom.
+         */
         y?: number | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Whether any parts are missing.
+   */
   completeness?: ('complete' | 'incomplete') | null;
+  /**
+   * Tick if the original box comes with it.
+   */
   hasBox?: boolean | null;
+  /**
+   * Tick if the manual comes with it.
+   */
   hasManual?: boolean | null;
+  /**
+   * List what is missing.
+   */
   missingParts?: string | null;
+  /**
+   * Tick if you switched it on and it works.
+   */
   tested?: boolean | null;
+  /**
+   * When it was cleaned and disinfected — shown to the buyer.
+   */
   cleanedAt?: string | null;
   /**
    * e.g. 3×AA, not included
@@ -256,17 +358,32 @@ export interface Product {
    */
   gallery?:
     | {
+        /**
+         * Best: a PNG with the background removed — it stands on a drawn backdrop (“Backdrop on the site”).
+         */
         image: number | Media;
+        /**
+         * “Main” shows on the card; the rest in the item’s gallery.
+         */
         role?: ('main' | 'gallery' | 'detail' | 'defect' | 'scale') | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Selling price. Only the owner can change it.
+   */
   price: number;
+  /**
+   * Only for a sale: shown crossed out.
+   */
   compareAtPrice?: number | null;
   /**
    * Used to show the saving
    */
   retailPriceNew?: number | null;
+  /**
+   * Which branch holds it and how many. One piece — 1.
+   */
   stock?:
     | {
         location: number | Location;
@@ -275,23 +392,53 @@ export interface Product {
       }[]
     | null;
   rental?: {
+    /**
+     * Switch on if it is also rented out — it appears on the Rent page.
+     */
     enabled?: boolean | null;
+    /**
+     * Price per day.
+     */
     dailyRate?: number | null;
     /**
      * Default = item value
      */
     deposit?: number | null;
+    /**
+     * Minimum days.
+     */
     minDays?: number | null;
+    /**
+     * Maximum days.
+     */
     maxDays?: number | null;
+    /**
+     * Can be bought after renting.
+     */
     buyoutAllowed?: boolean | null;
   };
+  /**
+   * For delivery, roughly.
+   */
   weightGrams?: number | null;
+  /**
+   * Package size, roughly.
+   */
   lengthCm?: number | null;
   widthCm?: number | null;
   heightCm?: number | null;
+  /**
+   * Tick if it needs careful handling.
+   */
   fragile?: boolean | null;
   seo?: {
+    /**
+     * Title in Google results. Empty — the item name.
+     */
     title?: string | null;
+    /**
+     * Text in Google results. Empty — the short description.
+     */
     description?: string | null;
   };
   updatedAt: string;
@@ -303,62 +450,25 @@ export interface Product {
  */
 export interface Category {
   id: number;
-  title: string;
-  description?: string | null;
   /**
-   * Colour of the category “world” on the site
+   * As buyers know it: “Soft toys”, “Building sets”…
    */
+  title: string;
+  /**
+   * One sentence — shown on the category page.
+   */
+  description?: string | null;
+  theme?: ('soft' | 'build' | 'vehicles' | 'figures' | 'games' | 'learn' | 'baby' | 'outdoor') | null;
   color: 'grape' | 'sun' | 'sky' | 'bubble' | 'mint' | 'tangerine';
-  /**
-   * Illustration key
-   */
   icon?: string | null;
+  /**
+   * If this is a subcategory, pick the main one. Usually empty.
+   */
   parent?: (number | null) | Category;
+  /**
+   * Order on the home page and catalogue: smaller comes first.
+   */
   order?: number | null;
-  /**
-   * Leave empty to generate automatically
-   */
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "franchises".
- */
-export interface Franchise {
-  id: number;
-  title: string;
-  description?: string | null;
-  /**
-   * Leave empty to generate automatically
-   */
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "brands".
- */
-export interface Brand {
-  id: number;
-  title: string;
-  /**
-   * Leave empty to generate automatically
-   */
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
- */
-export interface Tag {
-  id: number;
-  title: string;
-  kind?: ('theme' | 'skill' | 'occasion') | null;
   /**
    * Leave empty to generate automatically
    */
@@ -433,13 +543,31 @@ export interface Media {
  */
 export interface Location {
   id: number;
+  /**
+   * Branch name.
+   */
   title: string;
   city: string;
+  /**
+   * Address — on the Contact page and for pickup.
+   */
   address?: string | null;
+  /**
+   * Opening hours.
+   */
   hours?: string | null;
   phone?: string | null;
+  /**
+   * Google Maps link.
+   */
   mapUrl?: string | null;
+  /**
+   * Tick if orders can be picked up here.
+   */
   isPickupPoint?: boolean | null;
+  /**
+   * A switched-off branch is hidden on the site.
+   */
   active?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -472,7 +600,13 @@ export interface StoreSale {
  */
 export interface User {
   id: number;
+  /**
+   * How to address them — shown in the bot next to actions.
+   */
   name?: string | null;
+  /**
+   * “Owner” — everything. “Staff” — items, orders and sales, not prices or settings.
+   */
   roles: ('admin' | 'staff')[];
   updatedAt: string;
   createdAt: string;
@@ -502,7 +636,13 @@ export interface User {
  */
 export interface GameCampaign {
   id: number;
+  /**
+   * Shown on the Play page and the home page.
+   */
   title: string;
+  /**
+   * One campaign runs at a time — the most recently edited active one.
+   */
   active?: boolean | null;
   game?: 'toy-drop' | null;
   /**
@@ -510,17 +650,38 @@ export interface GameCampaign {
    */
   tiers?:
     | {
+        /**
+         * From which score this discount is given.
+         */
         minScore: number;
+        /**
+         * Discount in percent (max 50).
+         */
         percent: number;
         id?: string | null;
       }[]
     | null;
+  /**
+   * No tier gives more than this.
+   */
   maxPercent?: number | null;
+  /**
+   * Hours until a won code expires.
+   */
   validityHours?: number | null;
+  /**
+   * Rounds per device per day.
+   */
   attemptsPerDay?: number | null;
+  /**
+   * Empty — starts right away.
+   */
   startsAt?: string | null;
+  /**
+   * Empty — until switched off. The chosen day counts in full.
+   */
   endsAt?: string | null;
-  categories?: (number | Category)[] | null;
+  products?: (number | Product)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -604,18 +765,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
-      } | null)
-    | ({
-        relationTo: 'franchises';
-        value: number | Franchise;
-      } | null)
-    | ({
-        relationTo: 'brands';
-        value: number | Brand;
-      } | null)
-    | ({
-        relationTo: 'tags';
-        value: number | Tag;
       } | null)
     | ({
         relationTo: 'media';
@@ -752,9 +901,6 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   categories?: T;
-  franchises?: T;
-  brand?: T;
-  tags?: T;
   ageMinMonths?: T;
   ageMaxMonths?: T;
   origin?: T;
@@ -824,42 +970,11 @@ export interface ProductsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  theme?: T;
   color?: T;
   icon?: T;
   parent?: T;
   order?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "franchises_select".
- */
-export interface FranchisesSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "brands_select".
- */
-export interface BrandsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags_select".
- */
-export interface TagsSelect<T extends boolean = true> {
-  title?: T;
-  kind?: T;
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -967,7 +1082,7 @@ export interface GameCampaignsSelect<T extends boolean = true> {
   attemptsPerDay?: T;
   startsAt?: T;
   endsAt?: T;
-  categories?: T;
+  products?: T;
   updatedAt?: T;
   createdAt?: T;
 }

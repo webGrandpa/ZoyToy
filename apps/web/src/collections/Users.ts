@@ -1,11 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
 
 export const Users: CollectionConfig = {
   slug: 'users',
   labels: { singular: L('თანამშრომელი', 'Сотрудник', 'Team member'), plural: L('თანამშრომლები', 'Сотрудники', 'Team') },
-  admin: { useAsTitle: 'email', group: L('სისტემა', 'Система', 'System') },
+  admin: { useAsTitle: 'email', group: GROUP.system },
   auth: true,
   access: {
     create: isAdmin,

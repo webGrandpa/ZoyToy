@@ -82,6 +82,11 @@ export function GameShell({ game, tiers, practice, contact }: { game: GameId; ti
         const r: Result = { score: data.score, percent: data.percent ?? 0, code: data.code, expiresAt: data.expiresAt, kept: data.kept, verdict: data.verdict, practice: round.practice }
         setResult(r)
         setPhase('done')
+        // the cart fills the won code in and checks it by itself (Cart.tsx)
+        if (r.code)
+          try {
+            localStorage.setItem('zt-reward', JSON.stringify({ code: r.code, expiresAt: r.expiresAt ?? null }))
+          } catch {}
         if (r.percent && !r.kept) {
           confetti(0.4)
           shop.blip(660, 0.1)

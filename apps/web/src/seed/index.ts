@@ -1,5 +1,5 @@
 /**
- * Development seed: shop settings, Batumi branch, categories, brands, franchises and ten
+ * Development seed: shop settings, Batumi branch, categories and ten
  * example items in ka/ru/en with placeholder illustrations.
  *   pnpm seed            — fill an empty database
  *   pnpm seed fresh      — wipe catalogue data first
@@ -117,7 +117,7 @@ const ITEMS: Seed[] = [
 ]
 
 async function wipe(payload: Payload) {
-  for (const collection of ['rewards', 'game-sessions', 'game-campaigns', 'orders', 'products', 'categories', 'brands', 'franchises', 'tags', 'locations', 'media'] as const) {
+  for (const collection of ['rewards', 'game-sessions', 'game-campaigns', 'orders', 'products', 'categories', 'locations', 'media'] as const) {
     await payload.delete({ collection, where: { id: { exists: true } } })
   }
 }
@@ -159,11 +159,6 @@ async function main() {
     const doc = await payload.create({ collection: 'categories', locale: 'ka', data: { slug: c.slug, color: c.color as never, icon: c.icon, order: c.order, title: c.title.ka, description: c.description.ka } })
     for (const l of LOCS) await payload.update({ collection: 'categories', id: doc.id, locale: l, data: { title: c.title[l], description: c.description[l] } })
     catId[c.slug] = doc.id
-  }
-  for (const title of ['LEGO', 'Mattel', 'Hasbro', 'Fisher-Price', 'Melissa & Doug', 'Funko']) await payload.create({ collection: 'brands', data: { title } })
-  for (const title of ['Toy Story', 'Marvel', 'Minecraft', 'Disney Princess', 'Paw Patrol']) {
-    const f = await payload.create({ collection: 'franchises', locale: 'ka', data: { title } })
-    for (const l of LOCS) await payload.update({ collection: 'franchises', id: f.id, locale: l, data: { title } })
   }
 
   // ---- items ----

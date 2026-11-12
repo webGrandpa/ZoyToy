@@ -1,6 +1,7 @@
 import type { Field, GlobalConfig } from 'payload'
 import { anyone, isAdmin, isTeamField } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
 import { GAME_IDS } from '@zoytoy/games/catalog'
 import { asLang, DEFAULT_TEMPLATES, PLACEHOLDERS, TEMPLATE_FIELD, TEMPLATE_KEYS, TEMPLATE_LABEL } from '../lib/telegram/templates'
 
@@ -19,7 +20,7 @@ const chatIdError = { ka: 'მხოლოდ ციფრები (ჯგუ�
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: L('საიტის პარამეტრები', 'Настройки сайта', 'Site settings'),
-  admin: { group: L('სისტემა', 'Система', 'System') },
+  admin: { group: GROUP.system },
   access: { read: anyone, update: isAdmin },
   fields: [
     {

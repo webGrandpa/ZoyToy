@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import type { CollectionConfig, Endpoint, Payload } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig, Endpoint, Payload } from 'payload'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { sql } from '@payloadcms/db-postgres'
 import { shopDayStart } from '../lib/store'
@@ -7,6 +7,9 @@ import { tierFor, type Tier } from '@zoytoy/games/toy-drop'
 import { GAME_IDS, isGameId, verifyRound, type GameId } from '@zoytoy/games/catalog'
 import { anyone, isAdmin, isTeam } from '../lib/access'
 import { L } from '../lib/labels'
+import { checkReward } from '../lib/rewards'
+import { GROUP } from '../lib/groups'
+import { listFilters } from '../lib/listFilters'
 
 const GLOBAL_MAX_PERCENT = 50
 const sign = (id: number | string, seed: number) => crypto.createHmac('sha256', process.env.PAYLOAD_SECRET || 'dev').update(`${id}:${seed}`).digest('hex').slice(0, 32)
@@ -140,17 +143,28 @@ const finish: Endpoint = {
   },
 }
 
+/** Dates are whole days in Batumi: a campaign „until the 20th“ runs to the end of the 20th, not its first minute. */
+const wholeDays: CollectionBeforeChangeHook = ({ data }) => {
+  const DAY = 24 * 3600 * 1000
+  if (data.startsAt) data.startsAt = shopDayStart(new Date(data.startsAt)).toISOString()
+  if (data.endsAt) data.endsAt = new Date(shopDayStart(new Date(data.endsAt)).getTime() + DAY - 1000).toISOString()
+  return data
+}
+
 export const GameCampaigns: CollectionConfig = {
   slug: 'game-campaigns',
   labels: { singular: L('თამაშის კამპანია', 'Игровая кампания', 'Game campaign'), plural: L('თამაშის კამპანიები', 'Игровые кампании', 'Game campaigns') },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'active', 'maxPercent', 'updatedAt'],
-    group: L('თამაშები', 'Игры', 'Games'),
+    defaultColumns: ['title', 'active', 'startsAt', 'endsAt', 'updatedAt'],
+    group: GROUP.games,
     description: L('ჯილდოები მოქმედებს ყველა თამაშზე, რომელიც ჩართულია „საიტის პარამეტრები → თამაშები“-ში.', 'Награды действуют во всех играх, включённых в «Настройки сайта → Игры».', 'Rewards apply to every game switched on in Site settings → Games.'),
   },
   access: { read: anyone, create: isTeam, update: isTeam, delete: isAdmin },
+  hooks: { beforeChange: [wholeDays] },
   fields: [
+    // is it running right now, where to see it on the site, what stops it (components/admin/CampaignStatus.tsx)
+    { name: 'liveStatus', type: 'ui', admin: { components: { Field: '/components/admin/CampaignStatus#CampaignStatus' } } },
     { name: 'title', type: 'text', localized: true, required: true, label: L('სახელი', 'Название', 'Title') },
     { name: 'active', type: 'checkbox', defaultValue: true, label: L('აქტიური', 'Активна', 'Active'), admin: { position: 'sidebar' } },
     // kept for older records; which games are shown is chosen in Site settings → Games
@@ -160,6 +174,11 @@ export const GameCampaigns: CollectionConfig = {
       type: 'array',
       minRows: 1,
       label: L('ჯილდოს საფეხურები', 'Уровни наград', 'Reward tiers'),
+      labels: { singular: L('საფეხური', 'Ступень', 'Tier'), plural: L('საფეხურები', 'Ступени', 'Tiers') },
+      defaultValue: [
+        { minScore: 150, percent: 10 },
+        { minScore: 300, percent: 20 },
+      ],
       admin: { description: L('ქულა → ფასდაკლება %. მაქსიმუმი 50%.', 'Очки → скидка %. Максимум 50%.', 'Score → discount %. Maximum 50%.') },
       fields: [
         {
@@ -182,18 +201,27 @@ export const GameCampaigns: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'startsAt', type: 'date', label: L('დაწყება', 'Начало', 'Starts') },
-        { name: 'endsAt', type: 'date', label: L('დასრულება', 'Конец', 'Ends') },
+        { name: 'startsAt', type: 'date', label: L('დაწყება', 'Начало', 'Starts'), admin: { date: { pickerAppearance: 'dayOnly', displayFormat: 'dd.MM.yyyy' } } },
+        { name: 'endsAt', type: 'date', label: L('დასრულება', 'Конец', 'Ends'), admin: { date: { pickerAppearance: 'dayOnly', displayFormat: 'dd.MM.yyyy' } } },
       ],
     },
-    { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true, label: L('კატეგორიები (ცარიელი = ყველა)', 'Категории (пусто = все)', 'Categories (empty = all)') },
+    // which toys the won discount applies to — ticked in a list with photos (components/admin/ProductPicker.tsx); none = all
+    {
+      name: 'products',
+      type: 'relationship',
+      relationTo: 'products',
+      hasMany: true,
+      label: L('რომელ ნივთებზე მოქმედებს ფასდაკლება', 'На какие товары действует скидка', 'Items the discount applies to'),
+      admin: { components: { Field: '/components/admin/ProductPicker#ProductPicker' } },
+    },
   ],
 }
 
 export const GameSessions: CollectionConfig = {
   slug: 'game-sessions',
   labels: { singular: L('თამაშის სესია', 'Игровая сессия', 'Game session'), plural: L('თამაშის სესიები', 'Игровые сессии', 'Game sessions') },
-  admin: { defaultColumns: ['id', 'verdict', 'score', 'reasons', 'createdAt'], group: L('თამაშები', 'Игры', 'Games') },
+  // the anti-fraud log of every round: kept for checks, off the owner's menu (2026-11 feedback)
+  admin: { defaultColumns: ['id', 'verdict', 'score', 'reasons', 'createdAt'], group: GROUP.games, hidden: true },
   access: { read: isTeam, create: () => false, update: isAdmin, delete: isAdmin },
   endpoints: [start, finish],
   fields: [
@@ -215,6 +243,35 @@ export const GameSessions: CollectionConfig = {
   ],
 }
 
+// a few checks per visitor and minute are plenty for a person; a guesser trying codes is slowed down
+// (best effort: per server instance — codes are random, few and short-lived anyway)
+const CHECKS_PER_MINUTE = 12
+const recentChecks = new Map<string, number[]>()
+const tooManyChecks = (ip: string) => {
+  const now = Date.now()
+  const list = (recentChecks.get(ip) ?? []).filter((t) => now - t < 60_000)
+  list.push(now)
+  recentChecks.set(ip, list)
+  if (recentChecks.size > 5000) recentChecks.clear()
+  return list.length > CHECKS_PER_MINUTE
+}
+
+/** POST /api/rewards/check {code, items:[ids]} — the cart's „check the code“: what it is worth for these toys. */
+const checkEndpoint: Endpoint = {
+  path: '/check',
+  method: 'post',
+  handler: async (req) => {
+    if (tooManyChecks(hashIp(ipOf(req.headers)))) return Response.json({ ok: false, reason: 'rate_limited' }, { status: 429 })
+    const body = ((await req.json?.().catch(() => null)) ?? {}) as { code?: unknown; items?: unknown }
+    const ids = [...new Set((Array.isArray(body.items) ? body.items : []).map(Number).filter((n) => Number.isInteger(n) && n > 0))].slice(0, 12)
+    const found = ids.length
+      ? await req.payload.find({ collection: 'products', where: { id: { in: ids } }, depth: 0, limit: ids.length, overrideAccess: true, select: { price: true } })
+      : { docs: [] }
+    const result = await checkReward(req.payload, body.code, found.docs.map((p) => ({ id: p.id, price: p.price })))
+    return Response.json(result)
+  },
+}
+
 export const Rewards: CollectionConfig = {
   slug: 'rewards',
   labels: { singular: L('ჯილდო', 'Награда', 'Reward'), plural: L('ჯილდოები', 'Награды', 'Rewards') },
@@ -222,10 +279,12 @@ export const Rewards: CollectionConfig = {
     useAsTitle: 'code',
     defaultColumns: ['code', 'percent', 'status', 'phone', 'expiresAt'],
     listSearchableFields: ['code', 'phone'],
-    group: L('თამაშები', 'Игры', 'Games'),
+    group: GROUP.games,
+    components: listFilters('rewards'),
     description: L('შეკვეთისას შეამოწმე კოდი: სტატუსი „გაცემული“, ვადა არ გასულა, ერთი ნომერი — ერთი ჯილდო. გამოყენებისას დააყენე „გამოყენებული“ და ჩაწერე ნომერი.', 'При заказе проверьте код: статус «выдан», срок не истёк, один номер — одна награда. После использования поставьте «использован» и впишите номер.', 'At checkout check the code: status “issued”, not expired, one reward per phone. Once used, set “redeemed” and note the phone.'),
   },
   access: { read: isTeam, create: () => false, update: isTeam, delete: isAdmin },
+  endpoints: [checkEndpoint],
   fields: [
     { name: 'code', type: 'text', unique: true, index: true, required: true, label: L('კოდი', 'Код', 'Code'), admin: { readOnly: true } },
     { type: 'row', fields: [{ name: 'percent', type: 'number', required: true, label: L('ფასდაკლება %', 'Скидка %', 'Discount %') }, { name: 'score', type: 'number', label: L('ქულა', 'Очки', 'Score') }] },

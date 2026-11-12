@@ -3,8 +3,11 @@ import { APIError, commitTransaction, initTransaction, killTransaction, type Col
 import type { Order, Product } from '../payload-types'
 import { isTeam } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
+import { listFilters } from '../lib/listFilters'
 import { HOLD, highestNumber, itemIds, lockNumbers, moveProducts, releaseItems, relId } from '../lib/stock'
 import { inBackground, notifyNewOrder } from '../lib/telegram/bot'
+import { checkReward, normalizeCode } from '../lib/rewards'
 
 const RESERVE_HOURS = 24
 /** One request holds at most this many toys — enough for a real basket, too few to empty the shelf. */
@@ -90,25 +93,6 @@ const assignNumber: CollectionBeforeChangeHook<Order> = async ({ data, operation
   return { ...data, number: `ZT-${String(n).padStart(4, '0')}` }
 }
 
-/** A valid game reward lowers what the customer pays — only on the campaign's categories, if it names any. */
-async function rewardDiscount(payload: Payload, code: string, items: Product[]) {
-  if (!code) return null
-  const found = await payload.find({
-    collection: 'rewards',
-    where: { and: [{ code: { equals: code } }, { status: { equals: 'issued' } }, { or: [{ expiresAt: { exists: false } }, { expiresAt: { greater_than: new Date().toISOString() } }] }] },
-    limit: 1,
-    depth: 1,
-    overrideAccess: true,
-  })
-  const reward = found.docs[0]
-  if (!reward) return null
-  const campaign = reward.campaign && typeof reward.campaign === 'object' ? reward.campaign : null
-  const cats = (campaign?.categories ?? []).map(relId).filter(Boolean)
-  const eligible = cats.length ? items.filter((p) => (p.categories ?? []).some((c) => cats.includes(relId(c)))) : items
-  const base = eligible.reduce((s, p) => s + Number(p.price ?? 0), 0)
-  return { percent: reward.percent, amount: round((base * reward.percent) / 100) }
-}
-
 const requestEndpoint: Endpoint = {
   path: '/request',
   method: 'post',
@@ -143,8 +127,10 @@ const requestEndpoint: Endpoint = {
     const found = await payload.find({ collection: 'products', where: { id: { in: ids } }, locale: locale as 'ka', depth: 0, limit: MAX_ITEMS, overrideAccess: true })
     const items = ids.map((id) => found.docs.find((p) => p.id === id)).filter((p): p is Product => Boolean(p))
     const total = round(items.reduce((s, p) => s + Number(p.price ?? 0), 0))
-    const rewardCode = String(body.rewardCode ?? '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20)
-    const discount = await rewardDiscount(payload, rewardCode, items).catch(() => null)
+    // the game reward, worked out again on the server's own prices (lib/rewards.ts)
+    const rewardCode = normalizeCode(body.rewardCode)
+    const checked = await checkReward(payload, rewardCode, items).catch(() => null)
+    const discount = checked?.ok ? checked : null
     const reservedUntil = new Date(Date.now() + RESERVE_HOURS * 3600 * 1000).toISOString()
 
     let order: Order
@@ -212,9 +198,10 @@ export const Orders: CollectionConfig = {
   labels: { singular: L('შეკვეთის მოთხოვნა', 'Запрос заказа', 'Order request'), plural: L('შეკვეთები', 'Заказы', 'Orders') },
   admin: {
     useAsTitle: 'number',
-    defaultColumns: ['number', 'status', 'name', 'phone', 'total', 'createdAt'],
+    defaultColumns: ['number', 'status', 'name', 'phone', 'payable', 'createdAt'],
     listSearchableFields: ['number', 'name', 'phone'],
-    group: L('გაყიდვები', 'Продажи', 'Sales'),
+    group: GROUP.sales,
+    components: listFilters('orders'),
   },
   access: { read: isTeam, create: isTeam, update: isTeam, delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')) },
   endpoints: [requestEndpoint, releaseEndpoint],

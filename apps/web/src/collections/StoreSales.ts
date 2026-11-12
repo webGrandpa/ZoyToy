@@ -12,6 +12,8 @@ import {
 import type { Order, Product, StoreSale, User } from '../payload-types'
 import { isAdmin, isTeam } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
+import { listFilters } from '../lib/listFilters'
 import { discountPercent, parseScan, SALE_PAYMENTS, saleTotals, shopDayStart, UNDO_MINUTES } from '../lib/store'
 import { when } from '../lib/telegram/cards'
 import { moveProducts } from '../lib/stock'
@@ -215,7 +217,8 @@ export const StoreSales: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'sku', 'price', 'payment', 'soldBy', 'createdAt'],
     listSearchableFields: ['title', 'sku', 'phone'],
-    group: L('გაყიდვები', 'Продажи', 'Sales'),
+    group: GROUP.sales,
+    components: listFilters('store-sales'),
     description: L(
       'ახალი გაყიდვა — „🛒 მაღაზიაში გაყიდვა“ ეკრანიდან (QR სკანერით). ჩანაწერის წაშლა გაყიდვას აუქმებს და ნივთს თაროზე აბრუნებს.',
       'Новая продажа — с экрана «🛒 Продажа в магазине» (со сканером QR). Удаление записи отменяет продажу и возвращает товар на полку.',

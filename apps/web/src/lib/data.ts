@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import type { Where } from 'payload'
-import type { Category, Media, Product, Location, SiteSetting, Franchise, Brand } from '../payload-types'
+import type { Category, Media, Product, Location, SiteSetting } from '../payload-types'
 import type { ToyKind } from '@zoytoy/ui/ToyArt'
 import { TOY_KINDS } from '@zoytoy/ui/ToyArt'
 import type { Locale } from '../i18n/config'
@@ -38,8 +38,6 @@ export type ProductVM = CardVM & {
   gallery: (Img & { large: string; role: string })[]
   defects: { text: string; x: number | null; y: number | null }[]
   categories: { title: string; slug: string }[]
-  franchises: string[]
-  brand: string | null
   batteries: string | null
   hasManual: boolean
   locations: string[]
@@ -134,8 +132,6 @@ function toProduct(p: Product): ProductVM {
     gallery,
     defects: (p.defects ?? []).map((d) => ({ text: d.text, x: d.x ?? null, y: d.y ?? null })),
     categories: (p.categories ?? []).filter((c): c is Category => typeof c === 'object').map((c) => ({ title: c.title, slug: c.slug ?? '' })),
-    franchises: (p.franchises ?? []).filter((f): f is Franchise => typeof f === 'object').map((f) => f.title),
-    brand: p.brand && typeof p.brand === 'object' ? (p.brand as Brand).title : null,
     batteries: p.batteries ?? null,
     hasManual: Boolean(p.hasManual),
     locations: locNames,
@@ -165,7 +161,7 @@ export const getMainLocation = cache(async function getMainLocation(locale: Loca
 export const getCategories = cache(async function getCategories(locale: Locale) {
   const payload = await payloadClient()
   const res = await payload.find({ collection: 'categories', locale, limit: 50, sort: 'order', depth: 0 })
-  return res.docs.map((c) => ({ id: c.id, title: c.title, slug: c.slug ?? String(c.id), color: (c.color as Accent) ?? 'grape', icon: (TOY_KINDS.includes(c.icon as ToyKind) ? c.icon : 'blocks') as ToyKind, description: c.description ?? null }))
+  return res.docs.map((c) => ({ id: c.id, title: c.title, slug: c.slug ?? String(c.id), color: (c.color as Accent) ?? 'grape', icon: (TOY_KINDS.includes(c.icon as ToyKind) ? c.icon : 'blocks') as ToyKind, theme: c.theme ?? null, description: c.description ?? null }))
 })
 
 export async function getNewArrivals(locale: Locale, limit = 8): Promise<CardVM[]> {

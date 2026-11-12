@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin } from '../lib/access'
 import { L } from '../lib/labels'
+import { GROUP } from '../lib/groups'
 
 /** Shop branches. One today (Batumi); stock is already tracked per branch (docs/04). */
 export const Locations: CollectionConfig = {
   slug: 'locations',
   labels: { singular: L('ფილიალი', 'Филиал', 'Branch'), plural: L('ფილიალები', 'Филиалы', 'Branches') },
-  admin: { useAsTitle: 'title', group: L('სისტემა', 'Система', 'System') },
+  admin: { useAsTitle: 'title', group: GROUP.system },
   access: { read: anyone, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     { name: 'title', type: 'text', localized: true, required: true, label: L('სახელი', 'Название', 'Title') },

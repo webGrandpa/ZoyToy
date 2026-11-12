@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { money } from '../i18n/format'
@@ -12,6 +12,10 @@ import { confetti } from './confetti'
 import { stage } from '../lib/backdrop'
 
 type Contact = { whatsapp?: string | null; telegram?: string | null; instagram?: string | null; phone?: string | null }
+type Reward =
+  | { ok: true; code: string; percent: number; amount: number; base: number; eligible: number[]; expiresAt: string | null; everything: boolean }
+  | { ok: false; reason: string; percent?: number }
+
 type Done = { number: string; text: string; items: CartItem[] }
 const DELIVERY = ['pickup', 'courier', 'post', 'bus'] as const
 const PAYMENT = ['cash', 'transfer', 'link'] as const
@@ -31,6 +35,58 @@ export function CartDrawer({ contact }: { contact: Contact }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const open = shop.cartOpen
   const total = shop.items.reduce((s, i) => s + i.price, 0)
+
+  // game reward: checked on the server as soon as it is entered (or brought over from the game), so the
+  // customer sees the discount before sending; the order works it out again on the server's prices
+  const [code, setCode] = useState('')
+  const [reward, setReward] = useState<Reward | null>(null)
+  const [checking, setChecking] = useState(false)
+  const itemKey = shop.items.map((i) => i.id).join(',')
+  const checkCode = useCallback(
+    async (raw: string) => {
+      const value = raw.trim().toUpperCase()
+      if (!value) return setReward(null)
+      setChecking(true)
+      try {
+        const res = await fetch('/api/rewards/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: value, items: itemKey ? itemKey.split(',').map(Number) : [] }) })
+        const data = (await res.json().catch(() => null)) as Reward | null
+        setReward(res.status === 429 ? { ok: false, reason: 'rate_limited' } : (data ?? { ok: false, reason: 'error' }))
+      } catch {
+        setReward({ ok: false, reason: 'error' })
+      } finally {
+        setChecking(false)
+      }
+    },
+    [itemKey],
+  )
+  // a code won in the game is waiting: fill it in once the form opens
+  useEffect(() => {
+    if (view !== 'form' || code) return
+    try {
+      const saved = JSON.parse(localStorage.getItem('zt-reward') ?? 'null') as { code?: string; expiresAt?: string | null } | null
+      if (saved?.code && (!saved.expiresAt || new Date(saved.expiresAt).getTime() > Date.now())) {
+        setCode(saved.code)
+        void checkCode(saved.code)
+      }
+    } catch {}
+  }, [view]) // eslint-disable-line react-hooks/exhaustive-deps
+  // the cart changed: the same code may now cover more or fewer toys
+  useEffect(() => {
+    if (reward?.ok || reward?.reason === 'no_items') void checkCode(code)
+  }, [itemKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  const discount = reward?.ok ? reward : null
+  // the answer appears under the field, which sits near the bottom of the drawer: bring it into view
+  const rewardMsg = useRef<HTMLParagraphElement>(null)
+  useEffect(() => {
+    if (reward) rewardMsg.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [reward])
+  const rewardText = !reward
+    ? null
+    : reward.ok
+      ? reward.everything || reward.eligible.length === shop.items.length
+        ? f(m.cart.rewardOk, { p: reward.percent, amount: money(reward.amount) })
+        : f(m.cart.rewardSome, { p: reward.percent, n: reward.eligible.length, amount: money(reward.amount) })
+      : ({ not_found: m.cart.rewardNotFound, used: m.cart.rewardUsed, expired: m.cart.rewardExpired, no_items: m.cart.rewardNoItems, rate_limited: m.cart.rewardRate } as Record<string, string>)[reward.reason] ?? m.cart.rewardError
   const isBatumi = city === m.cart.cities[0]
   const deliveries = DELIVERY.filter((d) => (isBatumi ? d !== 'bus' : d !== 'courier' && d !== 'pickup'))
 
@@ -72,7 +128,7 @@ export function CartDrawer({ contact }: { contact: Contact }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: shop.items.map((i) => i.id), name, phone, city, delivery, payment, gift,
-          giftNote: fd.get('giftNote') ?? '', comment: fd.get('comment') ?? '', rewardCode: fd.get('rewardCode') ?? '', locale,
+          giftNote: fd.get('giftNote') ?? '', comment: fd.get('comment') ?? '', rewardCode: code.trim(), locale,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -97,6 +153,12 @@ export function CartDrawer({ contact }: { contact: Contact }) {
       ].filter(Boolean).join('\n')
       shop.clear()
       shop.setCartOpen(false)
+      if (Number(data.payable) < Number(data.total))
+        try {
+          localStorage.removeItem('zt-reward') // spent on this order
+        } catch {}
+      setCode('')
+      setReward(null)
       setDone({ number: data.number, text, items })
     } catch {
       setError(m.cart.errGeneric)
@@ -171,13 +233,40 @@ export function CartDrawer({ contact }: { contact: Contact }) {
                 <button type="button" role="switch" aria-checked={gift} className="zt-chip" onClick={() => { setGift(!gift); shop.blip(gift ? 520 : 990, 0.08) }}>{gift ? m.cart.yes : m.cart.no}</button>
               </div>
               {gift ? <label className="field" htmlFor="o-gift">{m.cart.giftNote}<textarea id="o-gift" name="giftNote" rows={2} /></label> : null}
-              <label className="field" htmlFor="o-reward">{m.cart.reward}<input id="o-reward" name="rewardCode" autoCapitalize="characters" placeholder="ZOY-XXXX" /></label>
+              <div className="field reward-field">
+                <label htmlFor="o-reward">{m.cart.reward}</label>
+                <div className="reward-row">
+                  <input
+                    id="o-reward"
+                    name="rewardCode"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    placeholder="ZOY-XXXXX"
+                    value={code}
+                    onChange={(e) => {
+                      setCode(e.target.value)
+                      setReward(null)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void checkCode(code)
+                      }
+                    }}
+                    onBlur={() => code.trim() && !reward && void checkCode(code)}
+                  />
+                  <button type="button" className="zt-btn zt-btn--secondary zt-btn--sm" disabled={!code.trim() || checking} onClick={() => void checkCode(code)}>
+                    {checking ? m.cart.rewardChecking : m.cart.rewardCheck}
+                  </button>
+                </div>
+                {rewardText ? <p ref={rewardMsg} className={`reward-msg${reward?.ok ? ' ok' : ''}`} role="status">{rewardText}</p> : null}
+              </div>
               <label className="field" htmlFor="o-comment">{m.cart.comment}<textarea id="o-comment" name="comment" rows={2} /></label>
               <ul className="lines mini">
                 {shop.items.map((i) => (
                   <li key={i.id} className="line">
                     <span className={`line-thumb ${stage(i.cut, i.color, false)}`}>{i.img ? <img src={i.img} alt="" /> : <ToyArt kind={i.art as ToyKind} />}</span>
-                    <span className="line-title">{i.title}</span>
+                    <span className="line-title">{i.title}{discount?.eligible.includes(i.id) ? <em className="line-deal">{f(m.cart.rewardBadge, { p: discount.percent })}</em> : null}</span>
                     <span className="line-price">{money(i.price)}</span>
                   </li>
                 ))}
@@ -188,7 +277,14 @@ export function CartDrawer({ contact }: { contact: Contact }) {
         </div>
         {shop.items.length ? (
           <div className="drawer-foot">
-            <div className="total"><span>{m.cart.total}</span><span>{money(total)}</span></div>
+            {discount ? (
+              <>
+                <div className="total total--was"><span>{m.cart.total}</span><s>{money(total)}</s></div>
+                <div className="total total--pay"><span>{m.cart.payable} <em>🎟 −{discount.percent}%</em></span><span>{money(total - discount.amount)}</span></div>
+              </>
+            ) : (
+              <div className="total"><span>{m.cart.total}</span><span>{money(total)}</span></div>
+            )}
             {view === 'cart' ? (
               <button type="button" className="zt-btn" onClick={() => { setView('form'); setError(null) }}>{m.cart.request}</button>
             ) : (

@@ -7,6 +7,7 @@ import { ka } from './i18n/admin/ka'
 import { kaLexical } from './i18n/admin/lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { CAMPAIGN_HELP, CATEGORY_HELP, describe, LOCATION_HELP, ORDER_HELP, PRODUCT_HELP, USER_HELP } from './lib/help'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
@@ -14,9 +15,6 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
-import { Franchises } from './collections/Franchises'
-import { Brands } from './collections/Brands'
-import { Tags } from './collections/Tags'
 import { Locations } from './collections/Locations'
 import { Orders } from './collections/Orders'
 import { StoreSales } from './collections/StoreSales'
@@ -42,6 +40,8 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     theme: 'light',
+    // day.month.year and 24-hour time, as people write dates in Georgia (not „November 12th 2026, 6:39 AM“)
+    dateFormat: 'dd.MM.yyyy, HH:mm',
     meta: { titleSuffix: ' — Zoy Toy', icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' }] },
     components: {
       graphics: { Logo: '/components/admin/AdminBrand#AdminLogo', Icon: '/components/admin/AdminBrand#AdminIcon' },
@@ -68,13 +68,14 @@ export default buildConfig({
   },
   // everything the storefront shows refreshes the cached pages on save (lib/refresh.ts); orders reach
   // the shop through the products they reserve, so they need no hook of their own
+  // describe(): the owner-facing help under every field (lib/help.ts)
   collections: [
-    Orders,
+    describe(Orders, ORDER_HELP),
     StoreSales,
-    ...[Products, Categories, Franchises, Brands, Tags, Media, Locations, GameCampaigns].map(withRefresh),
+    ...[describe(Products, PRODUCT_HELP), describe(Categories, CATEGORY_HELP), Media, describe(Locations, LOCATION_HELP), describe(GameCampaigns, CAMPAIGN_HELP)].map(withRefresh),
     Rewards,
     GameSessions,
-    Users,
+    describe(Users, USER_HELP),
   ],
   globals: [withGlobalRefresh(SiteSettings)],
   // Telegram bot webhook, its call button, and the daily job (expired reservations + morning digest)

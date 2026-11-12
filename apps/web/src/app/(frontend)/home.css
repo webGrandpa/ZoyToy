@@ -815,3 +815,15 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
   .j-plane { display: none; }
   .hero-pill, .hero2 h1 .t-a, .hero2 h1 .t-b, .hero2 h1 .t-c, .hero2 h1 .t-c::after, .hero2 .lede, .hero-ctas { animation: none !important; }
 }
+
+/* cart: game reward code — check it, see the discount before sending (Cart.tsx) */
+.reward-field { display: grid; gap: 6px; }
+.reward-row { display: flex; gap: 8px; }
+.reward-row input { flex: 1 1 auto; min-width: 0; text-transform: uppercase; letter-spacing: .04em; }
+.reward-row .zt-btn { flex: none; }
+.reward-msg { margin: 0; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 700; line-height: 1.4; background: color-mix(in srgb, var(--zt-danger) 14%, var(--zt-surface)); color: var(--zt-ink); }
+.reward-msg.ok { background: color-mix(in srgb, var(--zt-mint) 30%, var(--zt-surface)); }
+.line-deal { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--zt-mint); color: #1F1A3D; font-style: normal; font-size: 12px; font-weight: 900; vertical-align: 1px; }
+.drawer-foot .total--was { font-size: 15px; font-weight: 700; color: var(--zt-ink-soft); }
+.drawer-foot .total--was s { text-decoration-thickness: 2px; }
+.drawer-foot .total--pay em { font-style: normal; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--zt-mint); color: #1F1A3D; font-size: 13px; vertical-align: 3px; }

@@ -6,7 +6,23 @@ import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
  * (components/home/CategoryBoxes.tsx). Same drawing language as ToyArt: 120×120, thick dark outline,
  * the shop palette, a white glint here and there.
  */
-export type Theme = 'soft' | 'build' | 'vehicles' | 'figures' | 'games' | 'learn' | 'baby' | 'outdoor'
+export const THEMES = ['soft', 'build', 'vehicles', 'figures', 'games', 'learn', 'baby', 'outdoor'] as const
+export type Theme = (typeof THEMES)[number]
+
+/** Names of the toy groups, for the owner's picker in the category form (admin/CategoryLook.tsx). */
+export const THEME_LABEL: Record<Theme, { ka: string; ru: string; en: string }> = {
+  soft: { ka: 'რბილი სათამაშოები', ru: 'Мягкие игрушки', en: 'Soft toys' },
+  build: { ka: 'კონსტრუქტორები', ru: 'Конструкторы', en: 'Building sets' },
+  vehicles: { ka: 'მანქანები და ტრანსპორტი', ru: 'Машинки и транспорт', en: 'Vehicles' },
+  figures: { ka: 'თოჯინები და ფიგურები', ru: 'Куклы и фигурки', en: 'Dolls & figures' },
+  games: { ka: 'თამაშები და თავსატეხები', ru: 'Игры и пазлы', en: 'Games & puzzles' },
+  learn: { ka: 'საგანმანათლებლო', ru: 'Развивающие', en: 'Learning' },
+  baby: { ka: 'ჩვილებისთვის', ru: 'Для малышей', en: 'Baby' },
+  outdoor: { ka: 'გარე თამაშები', ru: 'Для улицы', en: 'Outdoor' },
+}
+
+/** The toy a card without a photo draws for each group (the category's `icon`). */
+export const THEME_ICON: Record<Theme, ToyKind> = { soft: 'teddy', build: 'blocks', vehicles: 'car', figures: 'rocket', games: 'puzzle', learn: 'blocks', baby: 'duck', outdoor: 'ball' }
 
 const E = 'var(--zt-edge)'
 const INK = '#1F1A3D'
@@ -485,5 +501,6 @@ const BY_SLUG: [RegExp, Theme][] = [
 ]
 const BY_ICON: Record<ToyKind, Theme> = { teddy: 'soft', blocks: 'build', car: 'vehicles', train: 'vehicles', rocket: 'figures', puzzle: 'games', duck: 'baby', ball: 'outdoor' }
 
-/** Which bouquet a category gets: from its address (seeded shelves), else from its icon. */
-export const themeFor = (slug: string, icon: ToyKind): Theme => BY_SLUG.find(([re]) => re.test(slug))?.[1] ?? BY_ICON[icon]
+/** Which bouquet a category gets: the owner's pick, else a guess from its address (seeded shelves), else its icon. */
+export const themeFor = (slug: string, icon: ToyKind, chosen?: string | null): Theme =>
+  (THEMES as readonly string[]).includes(chosen ?? '') ? (chosen as Theme) : (BY_SLUG.find(([re]) => re.test(slug))?.[1] ?? BY_ICON[icon] ?? 'build')

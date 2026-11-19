@@ -12,11 +12,14 @@ import { flyToCart } from './fly'
 const DAYS = [3, 7, 14]
 const rentTotal = (rate: number, d: number) => Math.round(rate * d * (d >= 14 ? 0.75 : d >= 7 ? 0.85 : 1) * 100) / 100
 
-/** Buy / rent switch with rolling price, savings jar and the rental day picker (docs/02 §7, docs/05 §5). */
+/**
+ * Rent / buy switch with rolling price, savings jar and the rental day picker (docs/02 §7, docs/05 §5).
+ * Rent comes first and is chosen from the start when the item can be rented (owner, 2026-11).
+ */
 export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSetting, 'whatsapp' | 'telegram' | 'instagram' | 'phone'> }) {
   const { m, f } = useI18n()
   const shop = useShop()
-  const [mode, setMode] = useState<'buy' | 'rent'>('buy')
+  const [mode, setMode] = useState<'buy' | 'rent'>(p.rental && p.status !== 'sold' ? 'rent' : 'buy')
   const [days, setDays] = useState(7)
   const actionsRef = useRef<HTMLDivElement>(null)
   const [stuck, setStuck] = useState(false)
@@ -50,7 +53,7 @@ export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSett
       {rental && !sold ? (
         <div className="toggle" role="radiogroup" aria-label={m.product.buyOrRent} data-mode={mode}>
           <span className="thumb" aria-hidden="true" />
-          {(['buy', 'rent'] as const).map((k) => (
+          {(['rent', 'buy'] as const).map((k) => (
             <button key={k} type="button" role="radio" aria-checked={mode === k} onClick={() => { setMode(k); shop.blip(k === 'rent' ? 520 : 660, 0.07) }}>
               {k === 'buy' ? m.product.buy : m.product.rent}
             </button>

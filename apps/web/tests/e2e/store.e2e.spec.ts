@@ -94,7 +94,9 @@ test.describe('In-store sale and QR labels', () => {
   test('the label link sends the team to the counter and customers to the item page', async ({ browser }) => {
     await page.goto(`${BASE}/q/${item.sku}`)
     await page.waitForURL(/\/admin\/store-sale\?id=/)
+    // a visitor who once picked Russian with the switch (the site itself opens in Georgian)
     const visitor = await browser.newContext({ locale: 'ru-RU' })
+    await visitor.addCookies([{ name: 'NEXT_LOCALE', value: 'ru', url: BASE }])
     const v = await visitor.newPage()
     await v.goto(`${BASE}/q/${item.sku}`)
     await v.waitForURL(new RegExp(`/ru/p/${item.slug}$`))

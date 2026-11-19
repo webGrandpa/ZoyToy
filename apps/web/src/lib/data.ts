@@ -6,6 +6,7 @@ import { TOY_KINDS } from '@zoytoy/ui/ToyArt'
 import type { Locale } from '../i18n/config'
 import { payloadClient } from './payload'
 import { cutOf, type Cut } from './backdrop'
+import { parseVideo, type Video } from './video'
 
 export type Accent = 'grape' | 'sun' | 'sky' | 'bubble' | 'mint' | 'tangerine'
 /** cut: the photo's background was removed — it stands on a drawn backdrop (lib/backdrop.ts) */
@@ -39,6 +40,8 @@ export type ProductVM = CardVM & {
   defects: { text: string; x: number | null; y: number | null }[]
   categories: { title: string; slug: string }[]
   batteries: string | null
+  size: string | null
+  video: Video | null
   hasManual: boolean
   locations: string[]
   rental: { enabled: boolean; dailyRate: number; deposit: number; minDays: number; maxDays: number } | null
@@ -133,6 +136,8 @@ function toProduct(p: Product): ProductVM {
     defects: (p.defects ?? []).map((d) => ({ text: d.text, x: d.x ?? null, y: d.y ?? null })),
     categories: (p.categories ?? []).filter((c): c is Category => typeof c === 'object').map((c) => ({ title: c.title, slug: c.slug ?? '' })),
     batteries: p.batteries ?? null,
+    size: p.size?.trim() || null,
+    video: parseVideo(p.videoUrl),
     hasManual: Boolean(p.hasManual),
     locations: locNames,
     rental: p.rental?.enabled

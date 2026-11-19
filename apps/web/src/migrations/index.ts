@@ -3,6 +3,7 @@ import * as migration_20261111_110818_telegram from './20261111_110818_telegram'
 import * as migration_20261111_135841_store_sales_contacts_audit from './20261111_135841_store_sales_contacts_audit';
 import * as migration_20261112_023041_media_backdrop from './20261112_023041_media_backdrop';
 import * as migration_20261112_033154_admin_cleanup from './20261112_033154_admin_cleanup';
+import * as migration_20261119_160023_client_notes from './20261119_160023_client_notes';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261112_033154_admin_cleanup.up,
     down: migration_20261112_033154_admin_cleanup.down,
-    name: '20261112_033154_admin_cleanup'
+    name: '20261112_033154_admin_cleanup',
+  },
+  {
+    up: migration_20261119_160023_client_notes.up,
+    down: migration_20261119_160023_client_notes.down,
+    name: '20261119_160023_client_notes'
   },
 ];

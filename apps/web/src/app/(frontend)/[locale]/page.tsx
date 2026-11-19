@@ -24,6 +24,7 @@ import { Faq } from '../../../components/home/Faq'
 import { GameTeaser } from '../../../components/home/GameTeaser'
 import { payloadClient } from '../../../lib/payload'
 import { activeCampaign } from '../../../collections/Games'
+import { WishForm } from '../../../components/WishForm'
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: l } = await params
@@ -55,7 +56,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {season === 'ny' ? <div className="snow" aria-hidden="true">{Array.from({ length: 30 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDuration: `${5 + (i % 5)}s`, animationDelay: `-${i % 8}s` }} />)}</div> : null}
           <div className="wrap hero2-grid">
             <div className="hero2-copy">
-              <p className="hero-pill"><span className="dot" aria-hidden="true" />{m.hero.eyebrow}</p>
+              <p className="hero-pill">
+                <span className="dot" aria-hidden="true" />
+                <span className="hero-pill__text">
+                  {m.hero.eyebrow}
+                  <small>📍 {m.hero.address}</small>
+                </span>
+              </p>
               <h1 id="hero-title">
                 {m.hero.titleA ? <span className="t-a">{m.hero.titleA}</span> : null}{' '}
                 <span className="t-b">{m.hero.titleB}</span>{' '}
@@ -88,14 +95,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <Marquee items={m.marquee} />
 
-      {/* ---------- stories ---------- */}
+      {/* ---------- stories (no heading on purpose: the owner did not want a „new toy every day“ promise, 2026-11) ---------- */}
       {arrivals.length ? (
-        <section className="sec sec-tight" aria-labelledby="st-title">
+        <section className="sec sec-tight" aria-label={m.stories.eyebrow}>
           <div className="wrap">
-            <div className="sec-head center">
-              <p className="eyebrow">{m.stories.eyebrow}</p>
-              <h2 id="st-title">{m.stories.title}</h2>
-            </div>
             <Stories items={arrivals.slice(0, 10)} />
           </div>
         </section>
@@ -230,6 +233,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="sec" aria-label={m.insta.eyebrow}>
         <div className="wrap">
           <InstaBand m={m} href={links.instagram} items={arrivals} />
+        </div>
+      </section>
+
+      {/* ---------- what toy should we add? (owner, 2026-11) ---------- */}
+      <section className="sec sec-tight">
+        <div className="wrap">
+          <WishForm source="home" />
         </div>
       </section>
 

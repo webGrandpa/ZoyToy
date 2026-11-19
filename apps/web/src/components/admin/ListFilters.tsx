@@ -63,6 +63,14 @@ const PRESETS: Record<string, Preset> = {
   media: {
     chips: [ALL(), { key: 'cut', label: L('✂️ ფონმოშორებული', '✂️ Без фона', '✂️ Cut-outs'), where: { cutout: { equals: true } } }],
   },
+  wishes: {
+    chips: [
+      ALL(),
+      status('new', L('🆕 ახალი', '🆕 Новые', '🆕 New')),
+      status('seen', L('👀 ნანახი', '👀 Просмотрено', '👀 Seen')),
+      status('added', L('✅ დაემატა', '✅ Добавлено', '✅ Added')),
+    ],
+  },
 }
 
 const UI: Record<Lang, { cat: string; anyCat: string; reset: string; columns: string }> = {

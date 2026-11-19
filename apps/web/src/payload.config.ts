@@ -7,6 +7,7 @@ import { ka } from './i18n/admin/ka'
 import { kaLexical } from './i18n/admin/lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { Wishes } from './collections/Wishes'
 import { CAMPAIGN_HELP, CATEGORY_HELP, describe, LOCATION_HELP, ORDER_HELP, PRODUCT_HELP, USER_HELP } from './lib/help'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -76,6 +77,7 @@ export default buildConfig({
     Rewards,
     GameSessions,
     describe(Users, USER_HELP),
+    Wishes,
   ],
   globals: [withGlobalRefresh(SiteSettings)],
   // Telegram bot webhook, its call button, and the daily job (expired reservations + morning digest)

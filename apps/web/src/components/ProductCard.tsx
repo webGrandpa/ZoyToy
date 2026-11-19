@@ -71,14 +71,28 @@ export function ProductCard({ p }: { p: CardVM }) {
             {p.ageMin != null ? (p.ageMax ? f(m.product.ageRange, { min: Math.floor(p.ageMin / 12), max: Math.floor(p.ageMax / 12) }) : f(m.product.ageFrom, { min: Math.floor(p.ageMin / 12) })) : null}
             {p.origin ? ` · ${m.origin[p.origin]}` : null}
           </p>
-          <div className="prices">
-            <span className="price">
-              <b>{money(p.price)}</b>
-              {p.compareAtPrice && p.compareAtPrice > p.price ? <s>{money(p.compareAtPrice)}</s> : null}
-            </span>
-            {save ? <span className="was">{f(m.product.newPrice, { price: money(save) })}</span> : null}
-            {p.rentDaily ? <span className="rent-from">{f(m.product.rentFrom, { price: money(p.rentDaily) })}</span> : null}
-          </div>
+          {p.rentDaily ? (
+            // rent first (owner, 2026-11): the daily rate is the big number, the sale price the small line
+            <div className="prices prices--rent">
+              <span className="price price--rent">
+                <small>{m.product.rentLabel}</small>
+                <b>{money(p.rentDaily)}</b>
+                <em>{m.product.perDay}</em>
+              </span>
+              <span className="buy-for">
+                {f(m.product.buyFor, { price: money(p.price) })}
+                {p.compareAtPrice && p.compareAtPrice > p.price ? <s>{money(p.compareAtPrice)}</s> : null}
+              </span>
+            </div>
+          ) : (
+            <div className="prices">
+              <span className="price">
+                <b>{money(p.price)}</b>
+                {p.compareAtPrice && p.compareAtPrice > p.price ? <s>{money(p.compareAtPrice)}</s> : null}
+              </span>
+              {save ? <span className="was">{f(m.product.newPrice, { price: money(save) })}</span> : null}
+            </div>
+          )}
         </div>
         <div className="face back" aria-hidden={!flipped}>
           <button className="flip-btn" type="button" aria-pressed={flipped} aria-label={m.condition.back} onClick={flip} tabIndex={flipped ? 0 : -1}>

@@ -194,6 +194,24 @@ export async function notifyNewOrder(payload: Payload, order: Order) {
   await send(chat, c.text, c.keyboard)
 }
 
+/** A customer's wish from the site form („What toy should we add?“) — to the shop's chat, with a call link if they left a phone. */
+export async function notifyWish(payload: Payload, wish: { id: number; text: string; phone?: string | null; name?: string | null; locale?: string | null; source?: string | null }) {
+  if (!botToken()) return
+  const chat = await ownerChat(payload)
+  if (!chat) return
+  const where = { home: 'მთავარი გვერდი', catalog: 'კატალოგი', empty: 'ძებნამ ვერაფერი იპოვა' }[String(wish.source)] ?? ''
+  const lines = [
+    '💡 <b>ახალი სურვილი</b>',
+    `„${esc(wish.text)}“`,
+    [wish.name ? esc(wish.name) : null, wish.phone ? `📞 ${esc(wish.phone)}` : 'ტელეფონი არ დატოვა', wish.locale ? wish.locale.toUpperCase() : null, where].filter(Boolean).join(' · '),
+  ]
+  const site = siteUrl()
+  const keyboard: Keyboard = []
+  if (wish.phone) keyboard.push([{ text: '💬 WhatsApp', url: `https://wa.me/${intlPhone(wish.phone)}` }])
+  if (site) keyboard.push([{ text: '📋 ადმინში', url: `${site}/admin/collections/wishes/${wish.id}` }])
+  await send(chat, lines.join('\n'), keyboard)
+}
+
 /**
  * An item that an unpaid online request was holding got sold at the counter — the owner has to tell
  * that customer. The order's card follows with its usual buttons (WhatsApp, cancel…).

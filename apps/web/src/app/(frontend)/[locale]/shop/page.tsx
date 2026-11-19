@@ -9,6 +9,7 @@ import { fmt, getMessages } from '../../../../i18n'
 import { getCategories, getShop, type ShopQuery } from '../../../../lib/data'
 import { ProductCard } from '../../../../components/ProductCard'
 import { CONDITION_ORDER } from '../../../../components/Condition'
+import { WishForm } from '../../../../components/WishForm'
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const { locale } = await params
@@ -155,6 +156,7 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
             <Link className="zt-btn zt-btn--secondary" href={`/${locale}/shop`}>{m.shop.reset}</Link>
           </div>
         )}
+        {!items.length ? <WishForm source="empty" /> : null}
 
         {pages > 1 ? (
           <nav className="pager" aria-label={fmt(locale, m.shop.page, { n: page, total: pages })}>
@@ -163,6 +165,7 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
             {page < pages ? <Link className="zt-btn zt-btn--secondary zt-btn--sm" href={href({ page: String(page + 1) })}>{m.shop.next}</Link> : <span />}
           </nav>
         ) : null}
+        {items.length ? <WishForm source="catalog" compact /> : null}
       </div>
     </section>
     </>

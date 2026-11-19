@@ -77,6 +77,7 @@ export interface Config {
     rewards: Reward;
     'game-sessions': GameSession;
     users: User;
+    wishes: Wish;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     rewards: RewardsSelect<false> | RewardsSelect<true>;
     'game-sessions': GameSessionsSelect<false> | GameSessionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    wishes: WishesSelect<false> | WishesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -282,6 +284,10 @@ export interface Product {
    */
   categories: (number | Category)[];
   /**
+   * Shown in the item’s details, e.g. “30 × 20 × 15 cm”, “40 cm tall”, “1.5 L”.
+   */
+  size?: string | null;
+  /**
    * e.g. 3 years = 36
    */
   ageMinMonths?: number | null;
@@ -369,6 +375,10 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Paste a YouTube, Facebook, Instagram or TikTok video link — it shows as a player on the item page.
+   */
+  videoUrl?: string | null;
   /**
    * Selling price. Only the owner can change it.
    */
@@ -727,6 +737,31 @@ export interface GameSession {
   createdAt: string;
 }
 /**
+ * From the site form “What toy should we add?”. If they left a phone, tell them when it arrives and set the status to “Added”.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wishes".
+ */
+export interface Wish {
+  id: number;
+  text: string;
+  name?: string | null;
+  /**
+   * Empty if not left
+   */
+  phone?: string | null;
+  status?: ('new' | 'seen' | 'added') | null;
+  /**
+   * Internal — never shown
+   */
+  notes?: string | null;
+  locale?: ('ka' | 'ru' | 'en') | null;
+  source?: ('home' | 'catalog' | 'empty') | null;
+  ipHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -789,6 +824,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'wishes';
+        value: number | Wish;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -901,6 +940,7 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   categories?: T;
+  size?: T;
   ageMinMonths?: T;
   ageMaxMonths?: T;
   origin?: T;
@@ -929,6 +969,7 @@ export interface ProductsSelect<T extends boolean = true> {
         role?: T;
         id?: T;
       };
+  videoUrl?: T;
   price?: T;
   compareAtPrice?: T;
   retailPriceNew?: T;
@@ -1147,6 +1188,22 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wishes_select".
+ */
+export interface WishesSelect<T extends boolean = true> {
+  text?: T;
+  name?: T;
+  phone?: T;
+  status?: T;
+  notes?: T;
+  locale?: T;
+  source?: T;
+  ipHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

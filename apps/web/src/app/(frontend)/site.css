@@ -247,6 +247,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .price s { font-size: 13px; color: var(--zt-ink-soft); font-weight: 700; }
 .was { flex-basis: 100%; font-size: 12px; color: var(--zt-ink-soft); font-weight: 700; }
 .rent-from { font-size: 12px; font-weight: 700; background: color-mix(in srgb, var(--zt-sky) 30%, transparent); padding: 1px 8px; border-radius: 8px; white-space: nowrap; }
+/* rentable items: the daily rate leads, the sale price follows small */
+.price--rent { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+.price--rent small { font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 8px; background: color-mix(in srgb, var(--zt-sky) 34%, transparent); align-self: center; }
+.price--rent em { font-style: normal; font-size: 13px; font-weight: 800; color: var(--zt-ink-soft); }
+.buy-for { flex-basis: 100%; font-size: 12.5px; font-weight: 700; color: var(--zt-ink-soft); }
+.buy-for s { margin-left: 6px; font-weight: 600; }
 @media (max-width: 560px) {
   .face { padding: 8px; gap: 6px; }
   .card .badges { top: 6px; left: 6px; right: 44px; gap: 4px; } .card .badges .zt-badge { font-size: 10.5px; padding: 1px 6px; }
@@ -413,7 +419,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .buyrent { display: grid; gap: 14px; }
 .toggle { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 5px; border-radius: 18px; border: 2px solid var(--zt-edge); background: var(--zt-surface-sunk); max-width: 360px; }
 .toggle .thumb { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 13px; background: var(--zt-grape); border: 2px solid var(--zt-edge); box-shadow: 0 3px 0 var(--zt-edge); transition: transform var(--zt-dur-base) var(--zt-spring), background var(--zt-dur-base); }
-.toggle[data-mode="rent"] .thumb { transform: translateX(100%); background: var(--zt-sky); }
+/* rent is the left half now (rent first), buy the right */
+.toggle[data-mode="rent"] .thumb { background: var(--zt-sky); }
+.toggle[data-mode="buy"] .thumb { transform: translateX(100%); }
 .toggle button { position: relative; z-index: 1; min-height: 46px; border: 0; background: none; font: inherit; font-weight: 700; font-size: 16px; color: var(--zt-ink-soft); cursor: pointer; }
 .toggle button[aria-checked="true"] { color: var(--zt-on-grape); }
 .toggle[data-mode="rent"] button[aria-checked="true"] { color: var(--zt-on-accent); }
@@ -539,3 +547,35 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .line-thumb.is-cut > img, .story-ring > span.is-cut > img { padding: 10%; }
 /* home spotlight frame: a cut-out gets the tint behind it instead of the page showing through */
 .spot-art > img.spot-cut { background: color-mix(in srgb, var(--tint, var(--zt-sun)) 30%, var(--zt-surface)); object-fit: contain; padding: 7%; box-sizing: border-box; }
+
+/* item page: video review (lib/video.ts) — wide players 16:9, Shorts / Reels / TikTok upright */
+.pdp-video { grid-column: 1 / -1; display: grid; gap: 12px; padding: 18px 20px 16px; }
+.pdp-video h2 { margin: 0; font-size: 20px; }
+.pdp-video__frame { position: relative; width: 100%; max-width: 860px; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 2px solid var(--zt-edge); background: #000; }
+.pdp-video__frame.is-tall { aspect-ratio: 9 / 16; width: min(100%, 380px); justify-self: center; }
+.pdp-video__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.pdp-video__link { justify-self: start; font-weight: 800; color: var(--zt-grape); }
+
+/* „What toy should we add?“ (WishForm.tsx) */
+.wish { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 28px; padding: 22px; background: color-mix(in srgb, var(--zt-sun) 16%, var(--zt-surface)); }
+.wish-art { width: 96px; height: auto; }
+.wish-body { display: grid; gap: 10px; min-width: 0; }
+.wish-body h2 { margin: 0; font-size: clamp(20px, 2.4vw, 26px); }
+.wish-lede { margin: 0; color: var(--zt-ink-soft); }
+.wish-form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; gap: 10px 12px; align-items: end; }
+.wish-form .field { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+.wish-form textarea, .wish-form input { width: 100%; box-sizing: border-box; }
+@media (min-width: 761px) { .wish-form textarea { height: 50px; min-height: 50px; resize: vertical; } .wish-form input { height: 50px; } }
+.wish-form .zt-btn { align-self: end; }
+.wish-form .form-error { grid-column: 1 / -1; margin: 0; }
+/* hidden in place (not pushed off-screen, which would widen the page) */
+.wish-form { position: relative; }
+.wish-form .wish-hp { position: absolute; top: 0; left: 0; width: 1px !important; height: 1px !important; padding: 0; border: 0; opacity: 0; pointer-events: none; clip-path: inset(50%); }
+.wish-done { margin: 0; padding: 12px 14px; border-radius: 14px; font-weight: 800; background: color-mix(in srgb, var(--zt-mint) 30%, var(--zt-surface)); }
+.wish--compact { margin-top: 36px; }
+@media (max-width: 760px) {
+  .wish { grid-template-columns: 1fr; padding: 18px; }
+  .wish-art { width: 64px; }
+  .wish-form { grid-template-columns: 1fr; }
+  .wish-form .zt-btn { justify-self: stretch; }
+}

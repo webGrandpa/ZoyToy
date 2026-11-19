@@ -109,6 +109,17 @@ export default async function ProductPage({ params }: Params) {
           </div>
 
           <div className="pdp-more">
+            {p.video ? (
+              <section className="zt-sticker pdp-video" aria-labelledby="video-title">
+                <h2 id="video-title">🎬 {m.product.video}</h2>
+                {p.video.embed ? (
+                  <div className={`pdp-video__frame${p.video.tall ? ' is-tall' : ''}`}>
+                    <iframe src={p.video.embed} title={`${m.product.video}: ${p.title}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+                  </div>
+                ) : null}
+                <a className="pdp-video__link" href={p.video.url} target="_blank" rel="noopener noreferrer">{m.product.watchVideo}</a>
+              </section>
+            ) : null}
             {p.description ? (
               <div className="zt-sticker prose">
                 <RichText data={p.description} />
@@ -117,6 +128,7 @@ export default async function ProductPage({ params }: Params) {
             <dl className="specs zt-sticker">
               <h2>{m.product.details}</h2>
               <div><dt>{m.product.sku}</dt><dd>{p.sku}</dd></div>
+              {p.size ? <div><dt>{m.product.size}</dt><dd>{p.size}</dd></div> : null}
               {p.categories.length ? <div><dt>{m.product.category}</dt><dd>{p.categories.map((c) => c.title).join(', ')}</dd></div> : null}
               {age ? <div><dt>{m.product.age}</dt><dd>{age}</dd></div> : null}
               {p.origin ? <div><dt>{m.product.origin}</dt><dd>{m.origin[p.origin]}</dd></div> : null}

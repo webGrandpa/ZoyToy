@@ -7,7 +7,7 @@ test.describe('Storefront (Georgian browser)', () => {
     await page.goto('http://localhost:3000')
     await expect(page).toHaveURL(/\/ka$/)
     await expect(page).toHaveTitle(/Zoy Toy/)
-    await expect(page.locator('h1').first()).toContainText('სიცოცხლე')
+    await expect(page.locator('h1').first()).toContainText('იქირავე')
   })
 
   test('switches language to Russian', async ({ page }) => {
@@ -21,9 +21,13 @@ test.describe('Storefront (Georgian browser)', () => {
 test.describe('Storefront (English browser)', () => {
   test.use({ locale: 'en-US' })
 
-  test('picks the visitor’s language from the browser', async ({ page }) => {
+  test('opens in Georgian whatever the browser says, then remembers the language picked', async ({ page }) => {
+    await page.goto('http://localhost:3000')
+    await expect(page).toHaveURL(/\/ka$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ka')
+    await page.getByRole('link', { name: 'Eng' }).click()
+    await expect(page).toHaveURL(/\/en$/)
     await page.goto('http://localhost:3000')
     await expect(page).toHaveURL(/\/en$/)
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   })
 })

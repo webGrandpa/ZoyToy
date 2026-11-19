@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useState } from 'react'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
+import { ZoyPeek } from '../ZoyPeek'
 import { POINTS, type Tier } from '@zoytoy/games/toy-drop'
 import { MEM_POINTS } from '@zoytoy/games/memory'
 import { WH_POINTS } from '@zoytoy/games/whack'
@@ -155,7 +155,7 @@ export function GameShell({ game, tiers, practice, contact }: { game: GameId; ti
           {ENGINES[game]({ seed: round?.seed ?? null, running: phase === 'playing', onHud, onEnd, blip: shop.blip, label: g.aria, perfectText: m.games.perfect })}
           {phase === 'idle' || phase === 'loading' || phase === 'limit' || phase === 'error' ? (
             <div className="td-over">
-              <GiraffeHead className="td-zoy" />
+              <ZoyPeek className="td-zoy" />
               <h2>{phase === 'limit' ? m.play.limit : phase === 'error' ? m.play.error : g.name}</h2>
               {phase === 'idle' || phase === 'loading' ? (
                 <>
@@ -176,7 +176,7 @@ export function GameShell({ game, tiers, practice, contact }: { game: GameId; ti
             </div>
           ) : null}
           {phase === 'count' ? <div className="td-over td-count"><span key={count}>{count}</span></div> : null}
-          {phase === 'sending' ? <div className="td-over"><GiraffeHead className="td-zoy spin" /><p>…</p></div> : null}
+          {phase === 'sending' ? <div className="td-over"><ZoyPeek className="td-zoy is-busy" /><p>…</p></div> : null}
           {phase === 'done' && result ? (
             <div className="td-over">
               {result.verdict === 'rejected' ? (
@@ -200,7 +200,7 @@ export function GameShell({ game, tiers, practice, contact }: { game: GameId; ti
                 </>
               ) : (
                 <>
-                  <GiraffeHead className="td-zoy" />
+                  <ZoyPeek className="td-zoy" />
                   <h2>{f(result.practice ? m.play.practiceDone : m.play.lose, { score: result.score })}</h2>
                   {!result.practice && next ? <p>{f(m.play.loseText, { n: next.minScore - result.score, p: next.percent })}</p> : null}
                 </>

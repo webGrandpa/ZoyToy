@@ -472,7 +472,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .contact-hero .wrap { align-items: center; }
 .contact-hero h1 { font-size: clamp(30px, 4.6vw, 52px); max-width: 16ch; }
 .contact-hero-art { position: relative; width: clamp(110px, 15vw, 170px); }
-.contact-hero-zoy { width: 100%; height: auto; animation: bob 5s ease-in-out infinite; filter: drop-shadow(0 8px 0 rgb(31 26 61 / .15)); }
+.contact-hero-zoy { width: 100%; filter: drop-shadow(0 8px 0 rgb(31 26 61 / .15)); }
 .contact-hero-bubble { position: absolute; top: -6px; right: -30px; display: flex; gap: 5px; padding: 12px 14px; border-radius: 20px 20px 20px 6px; background: var(--zt-surface); border: 3px solid var(--zt-edge); box-shadow: 0 4px 0 var(--zt-edge); }
 .contact-hero-bubble i { width: 8px; height: 8px; border-radius: 50%; background: var(--zt-grape); animation: typing 1.2s ease-in-out infinite; }
 .contact-hero-bubble i:nth-child(2) { animation-delay: .15s; } .contact-hero-bubble i:nth-child(3) { animation-delay: .3s; }
@@ -584,10 +584,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .deposit-lines { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }
 
 /* Zoy peeking out of a kraft box (ZoyPeek.tsx): the box front hides where the neck ends */
-.zoy-peek { position: relative; display: inline-block; width: 150px; aspect-ratio: 150 / 132; flex: none; }
+/* :where — the 150px is only a default; every placement (cart, contact, wish form…) sets its own width */
+:where(.zoy-peek) { width: 150px; }
+.zoy-peek { position: relative; display: inline-block; aspect-ratio: 150 / 132; flex: none; container-type: inline-size; }
 .zoy-peek__head { position: absolute; left: 50%; bottom: 26%; width: 70%; height: auto; translate: -50% 0; rotate: -6deg; z-index: 1; animation: zoy-peek 4.2s ease-in-out infinite; }
 .zoy-peek__box { position: absolute; left: 4%; right: 4%; bottom: 0; height: 40%; z-index: 2; display: grid; place-items: center; border: 3px solid var(--zt-edge); border-radius: 8px 8px 16px 16px; background: var(--zt-kraft); box-shadow: inset 0 7px 0 var(--zt-kraft-deep), 0 4px 0 var(--zt-edge); }
-.zoy-peek__box i { font-style: normal; font-weight: 900; font-size: 15px; letter-spacing: .12em; color: var(--zt-edge); padding: 1px 8px; border: 2px dashed rgb(31 26 61 / .45); border-radius: 6px; rotate: -4deg; }
+.zoy-peek__box i { font-style: normal; font-weight: 900; font-size: max(8px, 10cqw); letter-spacing: .12em; color: var(--zt-edge); padding: 1px 8px; border: 2px dashed rgb(31 26 61 / .45); border-radius: 6px; rotate: -4deg; }
 .zoy-peek__flap { position: absolute; bottom: 36%; width: 34%; height: 15%; z-index: 0; border: 3px solid var(--zt-edge); border-radius: 6px; background: var(--zt-kraft-deep); }
 .zoy-peek__flap--l { left: 0; transform-origin: 100% 100%; rotate: -24deg; }
 .zoy-peek__flap--r { right: 0; transform-origin: 0 100%; rotate: 24deg; }

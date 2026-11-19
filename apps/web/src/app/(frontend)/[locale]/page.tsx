@@ -1,6 +1,6 @@
+import { ZoyPeek } from '../../../components/ZoyPeek'
 import Link from 'next/link'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { isLocale, type Locale } from '../../../i18n/config'
 import { getMessages } from '../../../i18n'
 import { getAgeCounts, getCategories, getNewArrivals, getSettings, getSpotlight, getStats } from '../../../lib/data'
@@ -260,7 +260,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <div className="contact-card">
             <Sprinkles seed={9} count={8} />
-            <GiraffeHead className="contact-zoy" />
+            <ZoyPeek className="contact-zoy" />
             <p className="eyebrow">{m.contact.eyebrow}</p>
             <h2>{m.contact.title}</h2>
             <p>{m.contact.lede}</p>

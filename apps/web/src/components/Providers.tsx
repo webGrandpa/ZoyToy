@@ -63,7 +63,7 @@ export function Providers({ locale, messages, children }: { locale: Locale; mess
 
   useEffect(() => {
     setItems(read<CartItem[]>('zt-cart', []))
-    setSoundState(read<boolean>('zt-sound', false))
+    // the sound switch is gone from the header (owner, 2026-11): sounds stay off, even for visitors who once turned them on
   }, [])
 
   const itemsRef = useRef<CartItem[]>([])

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import type { Locale } from '../i18n/config'
 import type { Messages } from '../i18n'
-import { CartButton, LangSwitch, SoundToggle, ThemeToggle } from './HeaderControls'
+import { CartButton, LangSwitch, ThemeToggle } from './HeaderControls'
 import { NavLinks } from './NavLinks'
 import { IconChat, IconGame, IconGrid, IconKey } from './Icons'
 
@@ -29,7 +29,6 @@ export function Header({ locale, m, announcement }: { locale: Locale; m: Message
           />
           <div className="top-actions">
             <LangSwitch />
-            <SoundToggle />
             <ThemeToggle />
             <CartButton />
           </div>

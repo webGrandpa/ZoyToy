@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LOCALES, LOCALE_NAMES, type Locale } from '../i18n/config'
-import { IconCart, IconMoon, IconSoundOff, IconSoundOn, IconSunSmall } from './Icons'
+import { IconCart, IconMoon, IconSunSmall } from './Icons'
 import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useI18n, useShop } from './Providers'
@@ -32,25 +32,6 @@ export function LangSwitch() {
         </Link>
       ))}
     </nav>
-  )
-}
-
-export function SoundToggle() {
-  const { m } = useI18n()
-  const { sound, setSound, blip } = useShop()
-  return (
-    <button
-      type="button"
-      className="zt-icon-btn"
-      aria-pressed={sound}
-      aria-label={sound ? m.nav.soundOff : m.nav.soundOn}
-      onClick={() => {
-        setSound(!sound)
-        setTimeout(() => blip(880, 0.1), 30)
-      }}
-    >
-      {sound ? <IconSoundOn /> : <IconSoundOff />}
-    </button>
   )
 }
 

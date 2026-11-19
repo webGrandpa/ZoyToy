@@ -426,14 +426,16 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .contact-card { position: sticky; top: 96px; overflow: hidden; display: grid; gap: 12px; padding: 30px 30px 34px; background: var(--zt-cta); color: #fff; border: 3px solid var(--zt-edge); border-radius: 28px; box-shadow: 0 8px 0 var(--zt-edge); }
 @media (max-width: 860px) { .contact-card { position: relative; top: auto; } }
 .contact-card > * { position: relative; }
-.contact-card > .contact-zoy { position: absolute; right: -18px; bottom: -22px; width: 120px; rotate: -12deg; opacity: .95; pointer-events: none; animation: zoy-nod 4.5s ease-in-out infinite; }
+/* top-right, next to the heading — clear of the buttons */
+.contact-card > .contact-zoy { position: absolute; right: 16px; top: 14px; width: 104px; rotate: 6deg; pointer-events: none; }
+.contact-card > .eyebrow, .contact-card > h2 { padding-right: 110px; }
 .contact-card .eyebrow { color: var(--zt-sun); }
 .contact-card h2 { font-size: clamp(26px, 3.4vw, 36px); padding-right: 40px; }
 .contact-card .muted { color: rgb(255 255 255 / .8); }
 .contact-card .sprinkles { inset: 0; }
 .contact-card .sp { opacity: .35; }
 .contact-actions { display: grid; gap: 10px; margin-top: 6px; margin-right: 70px; }
-@media (max-width: 420px) { .contact-actions { margin-right: 0; } .contact-card > .contact-zoy { width: 84px; bottom: -18px; opacity: .5; } }
+@media (max-width: 420px) { .contact-actions { margin-right: 0; } .contact-card > .contact-zoy { width: 72px; top: 12px; right: 10px; } .contact-card > .eyebrow, .contact-card > h2 { padding-right: 78px; } }
 
 /* ---------- footer ---------- */
 .foot-site { position: relative; margin-top: 120px; padding-block: 40px 28px; background: var(--zt-night); color: #E4DEFF; border-top: 0; }

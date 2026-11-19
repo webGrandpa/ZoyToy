@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
+import { ZoyPeek } from '../../../../components/ZoyPeek'
 import { alternates } from '../../../../lib/seo'
 import Link from 'next/link'
 import type { ComponentType, SVGProps } from 'react'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { ToyArt } from '@zoytoy/ui/ToyArt'
 import { isLocale, type Locale } from '../../../../i18n/config'
 import { getMessages } from '../../../../i18n'
@@ -68,7 +68,7 @@ export default async function ContactPage({ params }: Params) {
             <p className="lede">{t.lede}</p>
           </div>
           <div className="contact-hero-art" aria-hidden="true">
-            <GiraffeHead className="contact-hero-zoy" />
+            <ZoyPeek className="contact-hero-zoy" />
             <span className="contact-hero-bubble"><i /><i /><i /></span>
           </div>
         </div>

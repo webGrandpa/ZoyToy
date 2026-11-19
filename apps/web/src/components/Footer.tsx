@@ -21,7 +21,7 @@ export function Footer({ locale, m, settings, location }: { locale: Locale; m: M
       <span className="foot-paw r" aria-hidden="true" />
       <div className="wrap foot-grid">
         <div className="foot-brand">
-          <GiraffeHead className="foot-mark" />
+          <GiraffeHead className="foot-mark" neck={false} />
           <p><b>Zoy Toy</b> — {m.footer.tagline}</p>
           {location ? (
             <p className="muted">

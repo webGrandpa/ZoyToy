@@ -4,7 +4,7 @@ import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 export function AdminLogo() {
   return (
     <div className="zt-admin-logo">
-      <GiraffeHead width={84} height={84} />
+      <GiraffeHead width={88} height={88} neck={false} />
       <div>
         <b>Zoy Toy</b>
         <span>ზოი თოი · მართვის პანელი</span>
@@ -15,5 +15,5 @@ export function AdminLogo() {
 
 /** Small mark in the admin navigation. */
 export function AdminIcon() {
-  return <GiraffeHead width={30} height={30} />
+  return <GiraffeHead width={30} height={30} neck={false} />
 }

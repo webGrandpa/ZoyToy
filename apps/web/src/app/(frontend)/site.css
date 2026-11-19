@@ -72,7 +72,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: color-mix(in srgb, var(--zt-canvas) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 2px solid var(--zt-line); }
 .top-row { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
 .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 900; font-size: 22px; letter-spacing: -0.02em; }
-.logo-mark { width: 40px; height: 40px; }
+.logo-mark { width: 46px; height: 46px; }
 .logo small { display: block; font-size: 11px; font-weight: 700; color: var(--zt-ink-soft); letter-spacing: 0; line-height: 1; }
 /* desktop nav: a jelly pill glides to the hovered link (NavLinks.tsx) */
 .nav { position: relative; display: flex; gap: 4px; margin-left: auto; }
@@ -289,7 +289,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } .foot-brand { grid-column: 1 / -1; } }
 .foot-brand { display: grid; gap: 8px; align-content: start; }
 .foot-brand b { color: var(--zt-ink); }
-.foot-mark { width: 52px; height: 52px; }
+.foot-mark { width: 58px; height: 58px; }
 .foot-site h3 { font-size: 14px; color: var(--zt-ink); margin-bottom: 8px; }
 .foot-site ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .foot-site a { text-decoration: none; }

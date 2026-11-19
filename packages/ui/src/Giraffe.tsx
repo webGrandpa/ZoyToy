@@ -4,16 +4,20 @@ import React, { type SVGProps } from 'react'
 const E = 'var(--zt-edge)'
 const INK = '#1F1A3D'
 
-/** Zoy's head — logo mark, avatars, stickers. Original drawing (docs/05 §2). */
-export function GiraffeHead(props: SVGProps<SVGSVGElement>) {
+/**
+ * Zoy's head — logo mark, avatars, stickers. Original drawing (docs/05 §2).
+ * `neck={false}`: the head alone, framed tight around it — the logo (owner, 2026-11: no neck stub,
+ * and the head a little bigger in the same space).
+ */
+export function GiraffeHead({ neck = true, ...props }: SVGProps<SVGSVGElement> & { neck?: boolean }) {
   return (
-    <svg viewBox="50 2 120 120" aria-hidden="true" {...props}>
+    <svg viewBox={neck ? '50 2 120 120' : '53 5 114 90'} aria-hidden="true" {...props}>
       <path d="M96 36 L91 16 M124 36 L129 16" stroke={E} strokeWidth={5} strokeLinecap="round" />
       <circle cx="91" cy="15" r="6" fill="var(--zt-tangerine)" stroke={E} strokeWidth={3.5} />
       <circle cx="129" cy="15" r="6" fill="var(--zt-tangerine)" stroke={E} strokeWidth={3.5} />
       <ellipse cx="70" cy="46" rx="14" ry="7.5" fill="var(--zt-sun)" stroke={E} strokeWidth={4} transform="rotate(-22 70 46)" />
       <ellipse cx="150" cy="46" rx="14" ry="7.5" fill="var(--zt-sun)" stroke={E} strokeWidth={4} transform="rotate(22 150 46)" />
-      <rect x="94" y="80" width="32" height="40" rx="12" fill="var(--zt-sun)" stroke={E} strokeWidth={5} />
+      {neck ? <rect x="94" y="80" width="32" height="40" rx="12" fill="var(--zt-sun)" stroke={E} strokeWidth={5} /> : null}
       <ellipse cx="110" cy="58" rx="36" ry="31" fill="var(--zt-sun)" stroke={E} strokeWidth={5} />
       <circle cx="86" cy="42" r="6" fill="var(--zt-tangerine)" />
       <circle cx="134" cy="40" r="4.5" fill="var(--zt-tangerine)" />

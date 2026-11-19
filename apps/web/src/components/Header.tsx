@@ -13,7 +13,7 @@ export function Header({ locale, m, announcement }: { locale: Locale; m: Message
       <header className="top">
         <div className="wrap top-row">
           <Link href={`/${locale}`} className="logo" aria-label="Zoy Toy">
-            <GiraffeHead className="logo-mark" />
+            <GiraffeHead className="logo-mark" neck={false} />
             <span>
               Zoy Toy<small>{locale === 'ka' ? 'ზოი თოი · ბათუმი' : locale === 'ru' ? 'Зои Той · Батуми' : 'Batumi'}</small>
             </span>

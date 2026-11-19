@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ToyArt, type ToyKind } from '@zoytoy/ui/ToyArt'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { money } from '../i18n/format'
 import { contactLinks } from '../lib/contact'
 import { IconGift, IconX } from './Icons'
 import { useI18n, useShop, type CartItem } from './Providers'
 import { confetti } from './confetti'
 import { stage } from '../lib/backdrop'
+import { ZoyPeek } from './ZoyPeek'
 
 type Contact = { whatsapp?: string | null; telegram?: string | null; instagram?: string | null; facebook?: string | null; phone?: string | null }
 type Reward =
@@ -196,7 +196,7 @@ export function CartDrawer({ contact }: { contact: Contact }) {
               </ul>
             ) : (
               <div className="cart-empty">
-                <GiraffeHead className="cart-empty-art" />
+                <ZoyPeek className="cart-empty-art" />
                 <b>{m.cart.empty}</b>
                 <p>{m.cart.emptyText}</p>
                 <Link className="zt-btn zt-btn--secondary" href={`/${locale}/shop`} onClick={() => shop.setCartOpen(false)}>{m.cart.browse}</Link>

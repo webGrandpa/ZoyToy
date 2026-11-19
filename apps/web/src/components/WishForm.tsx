@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { useI18n } from './Providers'
+import { ZoyPeek } from './ZoyPeek'
 
 /**
  * „What toy would you like us to add?“ (owner, 2026-11) — on the home page, at the end of the catalogue
@@ -40,7 +40,7 @@ export function WishForm({ source, compact = false }: { source: 'home' | 'catalo
 
   return (
     <section className={`wish zt-sticker${compact ? ' wish--compact' : ''}`} aria-labelledby={`wish-${source}`}>
-      <GiraffeHead className="wish-art" />
+      <ZoyPeek className="wish-art" />
       <div className="wish-body">
         <h2 id={`wish-${source}`}>{source === 'empty' ? t.emptyTitle : t.title}</h2>
         <p className="wish-lede">{t.lede}</p>

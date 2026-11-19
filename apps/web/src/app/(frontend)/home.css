@@ -524,7 +524,7 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 .drawer.gift .line { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--zt-bubble) 22%, var(--zt-surface)) 0 10px, var(--zt-surface) 10px 20px); }
 .cart-empty { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 30px 6px; color: var(--zt-ink-soft); }
 .cart-empty b { color: var(--zt-ink); font-size: 20px; }
-.cart-empty-art { width: 120px; rotate: -10deg; animation: bob 4s ease-in-out infinite; }
+.cart-empty-art { width: 150px; }
 .order-form { display: grid; gap: 14px; }
 .field { display: grid; gap: 6px; font-size: 14px; font-weight: 700; border: 0; padding: 0; margin: 0; min-width: 0; }
 .field legend { padding: 0; margin-bottom: 6px; }

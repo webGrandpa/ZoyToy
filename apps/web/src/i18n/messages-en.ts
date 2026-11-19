@@ -4,7 +4,7 @@ import type { Messages } from './messages-ka'
 export const en: Messages = {
   meta: {
     title: 'Zoy Toy — toy shop in Batumi',
-    description: 'Quality toys from the USA and Europe — checked, disinfected and delivered across Georgia. Buy or rent.',
+    description: 'Eco-friendly toys from the USA and Europe — checked, disinfected and delivered across Georgia. Buy or rent.',
   },
   a11y: { skip: 'Skip to content', menu: 'Menu', close: 'Close', next: 'Next', prev: 'Previous' },
   nav: { home: 'Home', shop: 'Shop', play: 'Play', rent: 'Rent', contact: 'Contact', cart: 'Cart', search: 'Search', language: 'Language', soundOn: 'Turn sound on', soundOff: 'Turn sound off' },
@@ -14,7 +14,7 @@ export const en: Messages = {
     titleA: 'Rent a hundred times',
     titleB: 'and buy',
     titleC: 'once',
-    lede: 'Quality toys — checked, disinfected and fairly priced. Rent, buy, or play a game and win a discount.',
+    lede: 'Eco-friendly toys — checked, disinfected and fairly priced. Rent, buy, or play a game and win a discount.',
     buy: 'Browse the shop',
     rent: 'How renting works',
     play: 'Play and win',

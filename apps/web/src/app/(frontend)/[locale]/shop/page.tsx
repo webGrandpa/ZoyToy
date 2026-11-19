@@ -10,6 +10,7 @@ import { getCategories, getShop, type ShopQuery } from '../../../../lib/data'
 import { ProductCard } from '../../../../components/ProductCard'
 import { CONDITION_ORDER } from '../../../../components/Condition'
 import { WishForm } from '../../../../components/WishForm'
+import { ZoyPeek } from '../../../../components/ZoyPeek'
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const { locale } = await params
@@ -150,7 +151,7 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
           </div>
         ) : (
           <div className="empty zt-sticker">
-            <GiraffeHead className="empty-art" />
+            <ZoyPeek className="empty-art" />
             <h2>{m.shop.emptyTitle}</h2>
             <p>{m.shop.emptyText}</p>
             <Link className="zt-btn zt-btn--secondary" href={`/${locale}/shop`}>{m.shop.reset}</Link>

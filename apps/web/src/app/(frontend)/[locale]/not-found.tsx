@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { GiraffeHead } from '@zoytoy/ui/Giraffe'
 import { useI18n } from '../../../components/Providers'
 import { Balloons } from '../../../components/Balloons'
+import { ZoyPeek } from '../../../components/ZoyPeek'
 
 /** Unknown product or page inside a locale — Zoy looks for it. */
 export default function NotFound() {
@@ -13,7 +13,7 @@ export default function NotFound() {
     <section className="sec">
       <div className="wrap">
         <div className="empty zt-sticker">
-          <GiraffeHead className="empty-art" />
+          <ZoyPeek className="empty-art" />
           <h1>{m.notFound.title}</h1>
           <p>{m.notFound.text}</p>
           <Balloons />

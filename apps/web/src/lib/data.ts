@@ -24,6 +24,8 @@ export type CardVM = {
   compareAtPrice: number | null
   retailPriceNew: number | null
   rentDaily: number | null
+  /** false = only rented out: no sale price, no cart (Products → Sale → „For sale“) */
+  forSale: boolean
   image: Img | null
   art: ToyKind
   color: Accent
@@ -92,13 +94,14 @@ export function toCard(p: Product): CardVM {
     id: p.id,
     slug: p.slug ?? String(p.id),
     sku: p.sku ?? '',
-    title: p.title,
+    title: p.title ?? '',
     status: p.status,
     condition: p.condition,
     price: Number(p.price ?? 0),
     compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
     retailPriceNew: p.retailPriceNew ? Number(p.retailPriceNew) : null,
     rentDaily: p.rental?.enabled && p.rental.dailyRate ? Number(p.rental.dailyRate) : null,
+    forSale: p.forSale !== false,
     image: main ? toImg(main.image) : null,
     art: icon && TOY_KINDS.includes(icon) ? icon : 'blocks',
     color: (cat?.color as Accent) ?? 'grape',
@@ -111,7 +114,7 @@ export function toCard(p: Product): CardVM {
       hasBox: Boolean(p.hasBox),
       complete: p.completeness !== 'incomplete',
       missingParts: p.missingParts ?? null,
-      defects: (p.defects ?? []).map((d) => d.text),
+      defects: (p.defects ?? []).map((d) => d.text ?? '').filter(Boolean),
       notes: p.conditionNotes ?? null,
     },
   }
@@ -133,13 +136,13 @@ function toProduct(p: Product): ProductVM {
     shortDescription: p.shortDescription ?? null,
     description: p.description ?? null,
     gallery,
-    defects: (p.defects ?? []).map((d) => ({ text: d.text, x: d.x ?? null, y: d.y ?? null })),
-    categories: (p.categories ?? []).filter((c): c is Category => typeof c === 'object').map((c) => ({ title: c.title, slug: c.slug ?? '' })),
+    defects: (p.defects ?? []).filter((d) => d.text).map((d) => ({ text: d.text ?? '', x: d.x ?? null, y: d.y ?? null })),
+    categories: (p.categories ?? []).filter((c): c is Category => typeof c === 'object').map((c) => ({ title: c.title ?? '', slug: c.slug ?? '' })),
     batteries: p.batteries ?? null,
     size: p.size?.trim() || null,
     video: parseVideo(p.videoUrl),
     hasManual: Boolean(p.hasManual),
-    locations: locNames,
+    locations: locNames.filter((t): t is string => Boolean(t)),
     rental: p.rental?.enabled
       ? { enabled: true, dailyRate: Number(p.rental.dailyRate ?? 0), deposit: Number(p.rental.deposit ?? p.price ?? 0), minDays: p.rental.minDays ?? 1, maxDays: p.rental.maxDays ?? 30 }
       : null,
@@ -166,7 +169,7 @@ export const getMainLocation = cache(async function getMainLocation(locale: Loca
 export const getCategories = cache(async function getCategories(locale: Locale) {
   const payload = await payloadClient()
   const res = await payload.find({ collection: 'categories', locale, limit: 50, sort: 'order', depth: 0 })
-  return res.docs.map((c) => ({ id: c.id, title: c.title, slug: c.slug ?? String(c.id), color: (c.color as Accent) ?? 'grape', icon: (TOY_KINDS.includes(c.icon as ToyKind) ? c.icon : 'blocks') as ToyKind, theme: c.theme ?? null, description: c.description ?? null }))
+  return res.docs.map((c) => ({ id: c.id, title: c.title ?? '', slug: c.slug ?? String(c.id), color: (c.color as Accent) ?? 'grape', icon: (TOY_KINDS.includes(c.icon as ToyKind) ? c.icon : 'blocks') as ToyKind, theme: c.theme ?? null, heroFigure: c.heroFigure ?? null, figures: c.figures ?? [], description: c.description ?? null }))
 })
 
 export async function getNewArrivals(locale: Locale, limit = 8): Promise<CardVM[]> {

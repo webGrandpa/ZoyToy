@@ -61,6 +61,7 @@ const T = {
     onSite: 'საიტზე',
     err: 'ვერ შეინახა — სცადე თავიდან.',
     errSold: 'ეს ნივთი უკვე გაყიდულია.',
+    errRentOnly: 'ეს ნივთი მხოლოდ ქირავდება — არ იყიდება.',
     errPaid: 'ეს ნივთი ონლაინ შეკვეთა {n}-შია გადახდილი — გადადე!',
     labels: '🏷️ ეტიკეტები',
   },
@@ -103,6 +104,7 @@ const T = {
     onSite: 'На сайте',
     err: 'Не сохранилось — попробуйте ещё раз.',
     errSold: 'Этот товар уже продан.',
+    errRentOnly: 'Эта вещь только сдаётся в аренду — не продаётся.',
     errPaid: 'Товар оплачен онлайн в заказе {n} — отложите!',
     labels: '🏷️ Этикетки',
   },
@@ -145,6 +147,7 @@ const T = {
     onSite: 'On the site',
     err: 'Could not save — try again.',
     errSold: 'This item is already sold.',
+    errRentOnly: 'This item is rent-only — not for sale.',
     errPaid: 'Paid online in order {n} — set it aside!',
     labels: '🏷️ Labels',
   },
@@ -278,7 +281,7 @@ export function StoreSale({ initialId, initialQuery }: { initialId?: number; ini
     const body = res ? await res.json().catch(() => null) : null
     if (!res?.ok) {
       const msg = String(body?.errors?.[0]?.message ?? '')
-      setError(msg === 'already_sold' ? t.errSold : msg.startsWith('paid_online:') ? fill(t.errPaid, { n: msg.split(':')[1] }) : t.err)
+      setError(msg === 'not_for_sale' ? t.errRentOnly : msg === 'already_sold' ? t.errSold : msg.startsWith('paid_online:') ? fill(t.errPaid, { n: msg.split(':')[1] }) : t.err)
       return
     }
     setDone({ saleId: body.doc.id, item, price: body.doc.price })

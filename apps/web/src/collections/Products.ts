@@ -1,4 +1,4 @@
-import { APIError, type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
+import { APIError, type CollectionConfig, type CollectionBeforeChangeHook, type CollectionBeforeValidateHook } from 'payload'
 import type { Product } from '../payload-types'
 import { isAdminField, isTeam, publishedOrTeam } from '../lib/access'
 import { L } from '../lib/labels'
@@ -57,6 +57,12 @@ const guardStatus: CollectionBeforeChangeHook<Product> = async ({ data, original
   return data
 }
 
+/** A rent-only item has no sale price: keep the column filled (0) so the shop never treats it as free. */
+const rentOnlyPrice: CollectionBeforeValidateHook = ({ data }) => {
+  if (data && data.forSale === false && (data.price == null || data.price === '')) data.price = 0
+  return data
+}
+
 export const Products: CollectionConfig = {
   slug: 'products',
   labels: { singular: L('ნივთი', 'Товар', 'Item'), plural: L('ნივთები', 'Товары', 'Items') },
@@ -69,7 +75,7 @@ export const Products: CollectionConfig = {
   },
   access: { read: publishedOrTeam, create: isTeam, update: isTeam, delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')) },
   versions: { maxPerDoc: 25 },
-  hooks: { beforeChange: [assignSku, guardStatus, stampStatus] },
+  hooks: { beforeValidate: [rentOnlyPrice], beforeChange: [assignSku, guardStatus, stampStatus] },
   fields: [
     // the main photo as the first column of the items list (nothing inside the form)
     { name: 'photo', type: 'ui', label: L('ფოტო', 'Фото', 'Photo'), admin: { components: { Cell: '/components/admin/ProductThumb#ProductThumbCell', Field: '/components/admin/ProductThumb#Nothing' } } },
@@ -240,8 +246,25 @@ export const Products: CollectionConfig = {
         {
           label: L('ყიდვა', 'Продажа', 'Sale'),
           fields: [
+            // some toys are only rented out (owner, 2026-11): no sale price then, the site shows rent only
+            {
+              name: 'forSale',
+              type: 'checkbox',
+              defaultValue: true,
+              label: L('იყიდება', 'Продаётся', 'For sale'),
+              validate: (value: unknown, { data }: { data?: { rental?: { enabled?: boolean | null } } }) =>
+                value !== false || Boolean(data?.rental?.enabled) || L('ნივთი ან უნდა იყიდებოდეს, ან ქირავდებოდეს — ჩართე „ქირა“ ჩანართში „ქირავდება“.', 'Вещь должна продаваться или сдаваться — включите «Сдаётся в аренду» во вкладке «Аренда».', 'An item must be for sale or for rent — switch on “Available for rent” in the Rental tab.').ka,
+              admin: {
+                description: L(
+                  'მოხსენი, თუ ნივთი მხოლოდ ქირავდება — ფასი აღარ დაგჭირდება, საიტზე მხოლოდ ქირა ჩანს და კალათაში ვერ ჩაემატება.',
+                  'Снимите, если вещь только сдаётся — цена не нужна, на сайте видна только аренда, в корзину не добавить.',
+                  'Untick if the item is only rented out — no price needed; the site shows rent only and it cannot go into the cart.',
+                ),
+              },
+            },
             {
               type: 'row',
+              admin: { condition: (data) => data?.forSale !== false },
               fields: [
                 { name: 'price', type: 'number', min: 0, required: true, access: { update: isAdminField }, label: L('ფასი ₾', 'Цена ₾', 'Price ₾'), admin: { step: 0.01 } },
                 { name: 'compareAtPrice', type: 'number', min: 0, access: { update: isAdminField }, label: L('ძველი ფასი ₾ (აქცია)', 'Старая цена ₾ (акция)', 'Old price ₾ (sale)'), admin: { step: 0.01 } },

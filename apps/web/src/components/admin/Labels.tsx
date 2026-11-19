@@ -78,7 +78,7 @@ export async function LabelsView({ initPageResult, searchParams }: AdminViewServ
                     <label>
                       <input type="checkbox" name="id" value={p.id} />
                       {img ? <img src={img} alt="" width={40} height={40} /> : <span className="zt-labels-noimg" />}
-                      <span><b>{p.title}</b><small>{p.sku} · {money(p.price, lang)}</small></span>
+                      <span><b>{p.title}</b><small>{p.sku} · {p.forSale === false && p.rental?.dailyRate ? `${money(p.rental.dailyRate, lang)}/დღე` : money(p.price, lang)}</small></span>
                     </label>
                   </li>
                 )
@@ -131,7 +131,7 @@ export async function LabelsView({ initPageResult, searchParams }: AdminViewServ
             <div className="zt-label__txt">
               <b className="zt-label__title">{p.title}</b>
               <span className="zt-label__cond">{CONDITIONS.find((c) => c.value === p.condition)?.label.ka}</span>
-              <strong className="zt-label__price">{money(p.price, 'ka')}</strong>
+              <strong className="zt-label__price">{p.forSale === false && p.rental?.dailyRate ? `ქირა ${money(p.rental.dailyRate, 'ka')}/დღე` : money(p.price, 'ka')}</strong>
               <span className="zt-label__sku">ZOY TOY · {p.sku}</span>
             </div>
           </div>

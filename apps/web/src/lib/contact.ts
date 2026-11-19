@@ -8,6 +8,14 @@ const handleOf = (v: string) => v.trim().replace(/^@/, '').replace(/\/+$/, '')
 const linkOf = (v: string, base: string) => (/^https?:\/\//i.test(v.trim()) ? v.trim() : `${base}${encodeURIComponent(handleOf(v))}`)
 const digits = (v?: string | null) => v?.replace(/\D/g, '') ?? ''
 
+function messengerOf(v: string | null | undefined) {
+  const value = v?.trim()
+  if (!value) return null
+  if (/^https?:\/\//i.test(value) && /profile\.php|\?id=/i.test(value)) return value
+  const page = handleOf(value.replace(/^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\//i, '').split(/[/?#]/)[0])
+  return page ? `https://m.me/${encodeURIComponent(page)}` : null
+}
+
 /** Deep links for manual order handling (docs/08 §3). Without a configured number WhatsApp opens its share sheet. */
 export function contactLinks(s: Contacts, text?: string) {
   const enc = text ? encodeURIComponent(text) : ''
@@ -16,6 +24,8 @@ export function contactLinks(s: Contacts, text?: string) {
     whatsapp: wa ? `https://wa.me/${wa}${enc ? `?text=${enc}` : ''}` : `https://wa.me/${enc ? `?text=${enc}` : ''}`,
     telegram: s.telegram ? `https://t.me/${handleOf(s.telegram)}${enc ? `?text=${enc}` : ''}` : null,
     instagram: s.instagram?.trim() ? linkOf(s.instagram, 'https://www.instagram.com/') : 'https://www.instagram.com/zoy.toy/',
+    // Messenger chat with the shop's page (m.me/<page>); a profile link that has no page name stays as typed
+    facebook: messengerOf(s.facebook),
     phone: s.phone ? `tel:${s.phone.replace(/[^\d+]/g, '')}` : null,
   }
 }

@@ -11,8 +11,10 @@ const messageFields: Field[] = TEMPLATE_KEYS.map((key) => ({
   type: 'textarea',
   localized: true,
   label: TEMPLATE_LABEL[key],
-  defaultValue: ({ locale }: { locale?: string }) => DEFAULT_TEMPLATES[key][asLang(locale)],
-  admin: { rows: 4 },
+  // no defaultValue: Payload worked it out in the wrong language on saves (Georgian text landed in the
+  // Russian template). An empty field already means the built-in text (lib/telegram/templates.ts), and
+  // the admin shows that text as the field's hint in each language (components/admin/TriText.tsx)
+  admin: { rows: 4, custom: { placeholders: DEFAULT_TEMPLATES[key] } },
 }))
 
 const chatIdError = { ka: 'მხოლოდ ციფრები (ჯგუფისას წინ „-“)', ru: 'Только цифры (для группы — с «-» впереди)', en: 'Digits only (groups start with “-”)' }
@@ -31,7 +33,19 @@ export const SiteSettings: GlobalConfig = {
           fields: [
             { name: 'phone', type: 'text', label: L('ტელეფონი', 'Телефон', 'Phone') },
             { name: 'whatsapp', type: 'text', label: 'WhatsApp', admin: { description: L('ნომერი საერთაშორისო ფორმატში, მაგ. 9955XXXXXXXX', 'Номер в международном формате, напр. 9955XXXXXXXX', 'International format, e.g. 9955XXXXXXXX') } },
-            { name: 'telegram', type: 'text', label: 'Telegram', admin: { description: L('მომხმარებლის სახელი @-ის გარეშე', 'Имя пользователя без @', 'Username without @') } },
+            {
+              name: 'telegram',
+              type: 'text',
+              label: 'Telegram',
+              admin: {
+                placeholder: 'zoytoy',
+                description: L(
+                  'შენი Telegram-ის სახელი @-ის გარეშე (არა ბოტის). ჩაწერის მერე ნივთის გვერდზე, კალათაში და კონტაქტზე გამოჩნდება ღილაკი „Telegram“; ცარიელი — ღილაკი არ ჩანს.',
+                  'Ваше имя в Telegram без @ (не бота). После заполнения кнопка «Telegram» появится на странице товара, в корзине и в контактах; пусто — кнопки нет.',
+                  'Your Telegram username without @ (not the bot’s). Once filled, a “Telegram” button appears on item pages, in the cart and on Contact; empty — no button.',
+                ),
+              },
+            },
             { name: 'viber', type: 'text', label: 'Viber', admin: { description: L('ნომერი საერთაშორისო ფორმატში, მაგ. 9955XXXXXXXX', 'Номер в международном формате, напр. 9955XXXXXXXX', 'International format, e.g. 9955XXXXXXXX') } },
             { name: 'email', type: 'email', label: L('ელფოსტა', 'Эл. почта', 'Email') },
             {
@@ -40,7 +54,19 @@ export const SiteSettings: GlobalConfig = {
               admin: { description: L('ჩაწერე ბმული ან სახელი (@-ით ან მის გარეშე). საიტზე ჩანს მხოლოდ შევსებული — ფუტერში და „კონტაქტის“ გვერდზე.', 'Ссылка или имя (с @ или без). На сайте видны только заполненные — в подвале и на странице «Контакты».', 'A link or a handle (with or without @). Only the filled ones show on the site — footer and the Contact page.') },
               fields: [
                 { name: 'instagram', type: 'text', defaultValue: 'zoy.toy', label: 'Instagram' },
-                { name: 'facebook', type: 'text', label: 'Facebook' },
+                {
+                  name: 'facebook',
+                  type: 'text',
+                  label: 'Facebook',
+                  admin: {
+                    placeholder: 'facebook.com/zoytoy',
+                    description: L(
+                      'გვერდის ბმული ან სახელი. ჩაწერის მერე ნივთის გვერდზე და კალათაში გამოჩნდება ღილაკი „Facebook“ (იხსნება Messenger-ის ჩატი), ფუტერში და კონტაქტზე — გვერდის ბმული.',
+                      'Ссылка на страницу или её имя. После заполнения на странице товара и в корзине появится кнопка «Facebook» (откроется чат Messenger), в подвале и контактах — ссылка на страницу.',
+                      'The page link or name. Once filled, a “Facebook” button appears on item pages and in the cart (opens a Messenger chat), and the page link in the footer and on Contact.',
+                    ),
+                  },
+                },
                 { name: 'tiktok', type: 'text', label: 'TikTok' },
                 { name: 'youtube', type: 'text', label: 'YouTube' },
               ],

@@ -22,6 +22,7 @@
 .zt-btn--wa { --bg: #25D366; --ink: #0B2E17; }
 .zt-btn--tg { --bg: #2AABEE; --ink: #06233A; }
 .zt-btn--ig { --bg: var(--zt-bubble); --ink: var(--zt-on-accent); }
+.zt-btn--fb { --bg: #1877F2; --ink: #fff; }
 .zt-btn--ghost { --bg: transparent; --ink: var(--zt-ink); border-color: transparent; box-shadow: none; }
 .zt-btn--ghost:hover { background: var(--zt-surface-sunk); box-shadow: none; }
 .zt-btn--sm { min-height: 42px; padding: 0 16px; font-size: 15px; border-radius: 12px; }

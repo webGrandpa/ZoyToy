@@ -105,7 +105,7 @@ export function Stories({ items }: { items: CardVM[] }) {
               <h3>{cur.title}</h3>
               <p className="muted">{m.stories.only}</p>
               <div className="row">
-                <span className="price">{money(cur.price)}</span>
+                <span className="price">{cur.forSale || !cur.rentDaily ? money(cur.price) : `${money(cur.rentDaily)}${m.product.perDay}`}</span>
                 <Link className="zt-btn zt-btn--sm" href={`/${locale}/p/${cur.slug}`} onClick={() => cancelAnimationFrame(raf.current)}>{m.stories.view}</Link>
               </div>
             </div>

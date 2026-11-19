@@ -126,6 +126,9 @@ const requestEndpoint: Endpoint = {
 
     const found = await payload.find({ collection: 'products', where: { id: { in: ids } }, locale: locale as 'ka', depth: 0, limit: MAX_ITEMS, overrideAccess: true })
     const items = ids.map((id) => found.docs.find((p) => p.id === id)).filter((p): p is Product => Boolean(p))
+    // rent-only toys are not sold — the cart never offers them, a hand-made request gets the same answer
+    const rentOnly = items.filter((p) => p.forSale === false).map((p) => p.id)
+    if (rentOnly.length) return Response.json({ error: 'unavailable', ids: rentOnly }, { status: 409 })
     const total = round(items.reduce((s, p) => s + Number(p.price ?? 0), 0))
     // the game reward, worked out again on the server's own prices (lib/rewards.ts)
     const rewardCode = normalizeCode(body.rewardCode)

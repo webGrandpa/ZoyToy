@@ -54,6 +54,7 @@ const prepare: CollectionBeforeValidateHook = async ({ data, operation, req }) =
   if (!id) throw new APIError('product', 400, null, true)
   const p = await req.payload.findByID({ collection: 'products', id, depth: 0, locale: 'ka', req, overrideAccess: true }).catch(() => null)
   if (!p) throw new APIError('not_found', 404, null, true)
+  if (p.forSale === false) throw new APIError('not_for_sale', 409, null, true) // rent-only toy
   if (p.status === 'sold') {
     const paid = await holdingOrder(req, id, PAID)
     throw new APIError(paid ? `paid_online:${paid.number ?? paid.id}` : 'already_sold', 409, null, true)

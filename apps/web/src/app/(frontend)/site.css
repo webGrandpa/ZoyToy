@@ -579,3 +579,6 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .wish-form { grid-template-columns: 1fr; }
   .wish-form .zt-btn { justify-self: stretch; }
 }
+
+/* item page: the deposit and the three rent notes (owner's wording, 2026-11) */
+.deposit-lines { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }

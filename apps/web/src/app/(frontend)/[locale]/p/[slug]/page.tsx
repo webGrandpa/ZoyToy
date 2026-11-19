@@ -53,7 +53,8 @@ export default async function ProductPage({ params }: Params) {
     description: p.shortDescription ?? undefined,
     url: `${metadataBase().toString().replace(/\/$/, '')}/${locale}/p/${p.slug}`,
     itemCondition: p.condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
-    offers: {
+    // a rent-only toy has no sale offer
+    offers: !p.forSale ? undefined : {
       '@type': 'Offer',
       price: p.price.toFixed(2),
       priceCurrency: 'GEL',
@@ -104,6 +105,7 @@ export default async function ProductPage({ params }: Params) {
                 <a className="zt-btn zt-btn--wa zt-btn--sm" href={ask.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
                 {ask.telegram ? <a className="zt-btn zt-btn--tg zt-btn--sm" href={ask.telegram} target="_blank" rel="noopener">Telegram</a> : null}
                 <a className="zt-btn zt-btn--ig zt-btn--sm" href={ask.instagram} target="_blank" rel="noopener">Instagram</a>
+                {ask.facebook ? <a className="zt-btn zt-btn--fb zt-btn--sm" href={ask.facebook} target="_blank" rel="noopener">Facebook</a> : null}
               </div>
             </div>
           </div>

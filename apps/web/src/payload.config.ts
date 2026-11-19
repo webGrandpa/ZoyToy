@@ -7,6 +7,7 @@ import { ka } from './i18n/admin/ka'
 import { kaLexical } from './i18n/admin/lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { withGlobalTranslations, withTranslations } from './lib/i18nFields'
 import { Wishes } from './collections/Wishes'
 import { CAMPAIGN_HELP, CATEGORY_HELP, describe, LOCATION_HELP, ORDER_HELP, PRODUCT_HELP, USER_HELP } from './lib/help'
 import { fileURLToPath } from 'url'
@@ -73,13 +74,14 @@ export default buildConfig({
   collections: [
     describe(Orders, ORDER_HELP),
     StoreSales,
-    ...[describe(Products, PRODUCT_HELP), describe(Categories, CATEGORY_HELP), Media, describe(Locations, LOCATION_HELP), describe(GameCampaigns, CAMPAIGN_HELP)].map(withRefresh),
+    // withTranslations: every translatable text in ka / ru / en side by side (lib/i18nFields.ts)
+    ...[describe(Products, PRODUCT_HELP), describe(Categories, CATEGORY_HELP), Media, describe(Locations, LOCATION_HELP), describe(GameCampaigns, CAMPAIGN_HELP)].map(withTranslations).map(withRefresh),
     Rewards,
     GameSessions,
     describe(Users, USER_HELP),
     Wishes,
   ],
-  globals: [withGlobalRefresh(SiteSettings)],
+  globals: [withGlobalRefresh(withGlobalTranslations(SiteSettings))],
   // Telegram bot webhook, its call button, and the daily job (expired reservations + morning digest)
   endpoints: telegramEndpoints,
   editor: lexicalEditor(),

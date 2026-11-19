@@ -151,7 +151,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {campaign?.tiers?.length ? (
         <section className="sec doodles dd-3" aria-label={m.play.eyebrow}>
           <div className="wrap">
-            <GameTeaser locale={locale} m={m} title={campaign.title} tiers={campaign.tiers.map((t) => ({ minScore: t.minScore, percent: Math.min(t.percent, campaign.maxPercent ?? 50, 50) }))} />
+            <GameTeaser locale={locale} m={m} title={campaign.title ?? ''} tiers={campaign.tiers.map((t) => ({ minScore: t.minScore, percent: Math.min(t.percent, campaign.maxPercent ?? 50, 50) }))} />
           </div>
         </section>
       ) : null}
@@ -264,6 +264,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <a className="zt-btn zt-btn--wa" href={links.whatsapp} target="_blank" rel="noopener">{m.contact.whatsapp}</a>
               {links.telegram ? <a className="zt-btn zt-btn--tg" href={links.telegram} target="_blank" rel="noopener">{m.contact.telegram}</a> : null}
               <a className="zt-btn zt-btn--ig" href={links.instagram} target="_blank" rel="noopener">{m.contact.instagram}</a>
+              {links.facebook ? <a className="zt-btn zt-btn--fb" href={links.facebook} target="_blank" rel="noopener">Facebook</a> : null}
               {links.phone ? <a className="zt-btn zt-btn--secondary" href={links.phone}>{m.contact.call}</a> : null}
             </div>
           </div>

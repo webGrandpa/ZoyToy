@@ -11,7 +11,7 @@ import { useI18n, useShop, type CartItem } from './Providers'
 import { confetti } from './confetti'
 import { stage } from '../lib/backdrop'
 
-type Contact = { whatsapp?: string | null; telegram?: string | null; instagram?: string | null; phone?: string | null }
+type Contact = { whatsapp?: string | null; telegram?: string | null; instagram?: string | null; facebook?: string | null; phone?: string | null }
 type Reward =
   | { ok: true; code: string; percent: number; amount: number; base: number; eligible: number[]; expiresAt: string | null; everything: boolean }
   | { ok: false; reason: string; percent?: number }
@@ -362,6 +362,7 @@ function Packed({ done, contact, onClose }: { done: Done; contact: Contact; onCl
             >
               {m.cart.igCopy}
             </a>
+            {links.facebook ? <a className="zt-btn zt-btn--fb" href={links.facebook} target="_blank" rel="noopener">Facebook</a> : null}
             <button ref={closeRef} type="button" className="zt-btn zt-btn--ghost zt-btn--sm" onClick={onClose}>{m.cart.close}</button>
           </div>
         </div>

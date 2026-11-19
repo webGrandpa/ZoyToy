@@ -4,6 +4,7 @@ import { ProductThumbCell as ProductThumbCell_666e03e97239551a93b8215cefb5d68f }
 import { Nothing as Nothing_666e03e97239551a93b8215cefb5d68f } from '../../../components/admin/ProductThumb'
 import { ProductTools as ProductTools_9be360e5763847e3f36267c30be56792 } from '../../../components/admin/ProductTools'
 import { LinkCell as LinkCell_666e03e97239551a93b8215cefb5d68f } from '../../../components/admin/ProductThumb'
+import { TriText as TriText_fc0c2e57fd03292cde34842c18c64bb9 } from '../../../components/admin/TriText'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -52,6 +53,7 @@ export const importMap = {
   "/components/admin/ProductThumb#Nothing": Nothing_666e03e97239551a93b8215cefb5d68f,
   "/components/admin/ProductTools#ProductTools": ProductTools_9be360e5763847e3f36267c30be56792,
   "/components/admin/ProductThumb#LinkCell": LinkCell_666e03e97239551a93b8215cefb5d68f,
+  "/components/admin/TriText#TriText": TriText_fc0c2e57fd03292cde34842c18c64bb9,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

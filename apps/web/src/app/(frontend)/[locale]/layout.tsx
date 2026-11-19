@@ -80,7 +80,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <IconChat />
           </a>
           <TabBar />
-          <CartDrawer contact={{ whatsapp: settings.whatsapp, telegram: settings.telegram, instagram: settings.instagram, phone: settings.phone }} />
+          <CartDrawer contact={{ whatsapp: settings.whatsapp, telegram: settings.telegram, instagram: settings.instagram, facebook: settings.facebook, phone: settings.phone }} />
         </Providers>
       </body>
     </html>

@@ -256,7 +256,7 @@ export interface Product {
   /**
    * As a buyer would search: what it is + the key feature, e.g. “Wooden train with tracks”.
    */
-  title: string;
+  title?: string | null;
   /**
    * 1–2 sentences under the title (up to 220 characters).
    */
@@ -315,7 +315,7 @@ export interface Product {
         /**
          * e.g. “Small scratch on the left wing”.
          */
-        text: string;
+        text?: string | null;
         /**
          * The photo that shows it. Empty — the main photo.
          */
@@ -379,6 +379,10 @@ export interface Product {
    * Paste a YouTube, Facebook, Instagram or TikTok video link — it shows as a player on the item page.
    */
   videoUrl?: string | null;
+  /**
+   * Untick if the item is only rented out — no price needed; the site shows rent only and it cannot go into the cart.
+   */
+  forSale?: boolean | null;
   /**
    * Selling price. Only the owner can change it.
    */
@@ -451,6 +455,15 @@ export interface Product {
      */
     description?: string | null;
   };
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -463,12 +476,118 @@ export interface Category {
   /**
    * As buyers know it: “Soft toys”, “Building sets”…
    */
-  title: string;
+  title?: string | null;
   /**
    * One sentence — shown on the category page.
    */
   description?: string | null;
   theme?: ('soft' | 'build' | 'vehicles' | 'figures' | 'games' | 'learn' | 'baby' | 'outdoor') | null;
+  heroFigure?:
+    | (
+        | 'bunny'
+        | 'kitty'
+        | 'teddy'
+        | 'heart'
+        | 'elephant'
+        | 'octopus'
+        | 'brick2'
+        | 'tower'
+        | 'blocks'
+        | 'arch'
+        | 'brick4'
+        | 'roof'
+        | 'bus'
+        | 'plane'
+        | 'car'
+        | 'boat'
+        | 'train'
+        | 'copter'
+        | 'rocket'
+        | 'dino'
+        | 'doll'
+        | 'robot'
+        | 'unicorn'
+        | 'hero'
+        | 'matryoshka'
+        | 'pawn'
+        | 'cards'
+        | 'puzzle'
+        | 'dice'
+        | 'knight'
+        | 'cube'
+        | 'crayons'
+        | 'book'
+        | 'abacus'
+        | 'globe'
+        | 'magnifier'
+        | 'sorter'
+        | 'rings'
+        | 'rattle'
+        | 'duck'
+        | 'bottle'
+        | 'pacifier'
+        | 'sleepystar'
+        | 'frisbee'
+        | 'kite'
+        | 'ball'
+        | 'bucket'
+        | 'spade'
+        | 'scooter'
+      )
+    | null;
+  figures?:
+    | (
+        | 'bunny'
+        | 'kitty'
+        | 'teddy'
+        | 'heart'
+        | 'elephant'
+        | 'octopus'
+        | 'brick2'
+        | 'tower'
+        | 'blocks'
+        | 'arch'
+        | 'brick4'
+        | 'roof'
+        | 'bus'
+        | 'plane'
+        | 'car'
+        | 'boat'
+        | 'train'
+        | 'copter'
+        | 'rocket'
+        | 'dino'
+        | 'doll'
+        | 'robot'
+        | 'unicorn'
+        | 'hero'
+        | 'matryoshka'
+        | 'pawn'
+        | 'cards'
+        | 'puzzle'
+        | 'dice'
+        | 'knight'
+        | 'cube'
+        | 'crayons'
+        | 'book'
+        | 'abacus'
+        | 'globe'
+        | 'magnifier'
+        | 'sorter'
+        | 'rings'
+        | 'rattle'
+        | 'duck'
+        | 'bottle'
+        | 'pacifier'
+        | 'sleepystar'
+        | 'frisbee'
+        | 'kite'
+        | 'ball'
+        | 'bucket'
+        | 'spade'
+        | 'scooter'
+      )[]
+    | null;
   color: 'grape' | 'sun' | 'sky' | 'bubble' | 'mint' | 'tangerine';
   icon?: string | null;
   /**
@@ -483,6 +602,15 @@ export interface Category {
    * Leave empty to generate automatically
    */
   slug?: string | null;
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -495,10 +623,19 @@ export interface Media {
   /**
    * What the photo shows — for screen readers and search
    */
-  alt: string;
+  alt?: string | null;
   backdrop?: ('auto' | 'sun' | 'bubble' | 'mint' | 'sky' | 'grape' | 'tangerine') | null;
   scene?: ('halo' | 'stars' | 'plain') | null;
   cutout?: boolean | null;
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -556,8 +693,8 @@ export interface Location {
   /**
    * Branch name.
    */
-  title: string;
-  city: string;
+  title?: string | null;
+  city?: string | null;
   /**
    * Address — on the Contact page and for pickup.
    */
@@ -579,6 +716,15 @@ export interface Location {
    * A switched-off branch is hidden on the site.
    */
   active?: boolean | null;
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -649,7 +795,7 @@ export interface GameCampaign {
   /**
    * Shown on the Play page and the home page.
    */
-  title: string;
+  title?: string | null;
   /**
    * One campaign runs at a time — the most recently edited active one.
    */
@@ -692,6 +838,15 @@ export interface GameCampaign {
    */
   endsAt?: string | null;
   products?: (number | Product)[] | null;
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -970,6 +1125,7 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   videoUrl?: T;
+  forSale?: T;
   price?: T;
   compareAtPrice?: T;
   retailPriceNew?: T;
@@ -1001,6 +1157,7 @@ export interface ProductsSelect<T extends boolean = true> {
         title?: T;
         description?: T;
       };
+  i18n?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1012,11 +1169,14 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   theme?: T;
+  heroFigure?: T;
+  figures?: T;
   color?: T;
   icon?: T;
   parent?: T;
   order?: T;
   slug?: T;
+  i18n?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1029,6 +1189,7 @@ export interface MediaSelect<T extends boolean = true> {
   backdrop?: T;
   scene?: T;
   cutout?: T;
+  i18n?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;
@@ -1100,6 +1261,7 @@ export interface LocationsSelect<T extends boolean = true> {
   mapUrl?: T;
   isPickupPoint?: T;
   active?: T;
+  i18n?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1124,6 +1286,7 @@ export interface GameCampaignsSelect<T extends boolean = true> {
   startsAt?: T;
   endsAt?: T;
   products?: T;
+  i18n?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1257,7 +1420,7 @@ export interface SiteSetting {
    */
   whatsapp?: string | null;
   /**
-   * Username without @
+   * Your Telegram username without @ (not the bot’s). Once filled, a “Telegram” button appears on item pages, in the cart and on Contact; empty — no button.
    */
   telegram?: string | null;
   /**
@@ -1266,6 +1429,9 @@ export interface SiteSetting {
   viber?: string | null;
   email?: string | null;
   instagram?: string | null;
+  /**
+   * The page link or name. Once filled, a “Facebook” button appears on item pages and in the cart (opens a Messenger chat), and the page link in the footer and on Contact.
+   */
   facebook?: string | null;
   tiktok?: string | null;
   youtube?: string | null;
@@ -1288,6 +1454,15 @@ export interface SiteSetting {
   msgPickup?: string | null;
   msgShipped?: string | null;
   msgCancelled?: string | null;
+  i18n?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1318,6 +1493,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   msgPickup?: T;
   msgShipped?: T;
   msgCancelled?: T;
+  i18n?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

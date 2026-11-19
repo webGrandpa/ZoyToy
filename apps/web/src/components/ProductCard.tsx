@@ -58,7 +58,7 @@ export function ProductCard({ p }: { p: CardVM }) {
             <button className="flip-btn" type="button" aria-pressed={flipped} aria-label={`${p.title}: ${m.condition.details}`} onClick={flip} tabIndex={flipped ? -1 : 0}>
               i
             </button>
-            {p.status === 'published' ? (
+            {p.status === 'published' && p.forSale ? (
               <button className="card-add" type="button" aria-label={`${p.title} — ${m.product.addToCart}`} onClick={add} tabIndex={flipped ? -1 : 0}>
                 <IconPlus />
               </button>
@@ -79,10 +79,14 @@ export function ProductCard({ p }: { p: CardVM }) {
                 <b>{money(p.rentDaily)}</b>
                 <em>{m.product.perDay}</em>
               </span>
-              <span className="buy-for">
-                {f(m.product.buyFor, { price: money(p.price) })}
-                {p.compareAtPrice && p.compareAtPrice > p.price ? <s>{money(p.compareAtPrice)}</s> : null}
-              </span>
+              {p.forSale ? (
+                <span className="buy-for">
+                  {f(m.product.buyFor, { price: money(p.price) })}
+                  {p.compareAtPrice && p.compareAtPrice > p.price ? <s>{money(p.compareAtPrice)}</s> : null}
+                </span>
+              ) : (
+                <span className="buy-for">{m.product.rentOnly}</span>
+              )}
             </div>
           ) : (
             <div className="prices">

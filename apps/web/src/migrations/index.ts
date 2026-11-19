@@ -4,6 +4,7 @@ import * as migration_20261111_135841_store_sales_contacts_audit from './2026111
 import * as migration_20261112_023041_media_backdrop from './20261112_023041_media_backdrop';
 import * as migration_20261112_033154_admin_cleanup from './20261112_033154_admin_cleanup';
 import * as migration_20261119_160023_client_notes from './20261119_160023_client_notes';
+import * as migration_20261119_162222_rent_only_figures_translations from './20261119_162222_rent_only_figures_translations';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261119_160023_client_notes.up,
     down: migration_20261119_160023_client_notes.down,
-    name: '20261119_160023_client_notes'
+    name: '20261119_160023_client_notes',
+  },
+  {
+    up: migration_20261119_162222_rent_only_figures_translations.up,
+    down: migration_20261119_162222_rent_only_figures_translations.down,
+    name: '20261119_162222_rent_only_figures_translations'
   },
 ];

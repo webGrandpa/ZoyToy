@@ -463,6 +463,88 @@ const Scooter = () => (
   </Svg>
 )
 
+type Art = () => React.JSX.Element
+type Name = { ka: string; ru: string; en: string }
+const n = (ka: string, ru: string, en: string): Name => ({ ka, ru, en })
+
+/**
+ * Every drawing a category box can show, by a stable key (stored in Categories → figures / heroFigure),
+ * so the owner can put together any box one toy at a time (feedback 2026-11-19).
+ */
+export const FIGURES = {
+  bunny: { Art: Bunny, theme: 'soft', name: n('კურდღელი', 'Зайка', 'Bunny') },
+  kitty: { Art: Kitty, theme: 'soft', name: n('კნუტი', 'Котёнок', 'Kitten') },
+  teddy: { Art: toy('teddy'), theme: 'soft', name: n('დათუნია', 'Мишка', 'Teddy') },
+  heart: { Art: HeartPillow, theme: 'soft', name: n('გული-ბალიში', 'Подушка-сердце', 'Heart pillow') },
+  elephant: { Art: Elephant, theme: 'soft', name: n('სპილო', 'Слонёнок', 'Elephant') },
+  octopus: { Art: Octopus, theme: 'soft', name: n('რვაფეხა', 'Осьминожка', 'Octopus') },
+  brick2: { Art: Brick2, theme: 'build', name: n('აგური (2)', 'Кубик (2)', 'Brick (2)') },
+  tower: { Art: Tower, theme: 'build', name: n('კოშკი', 'Башня', 'Tower') },
+  blocks: { Art: toy('blocks'), theme: 'build', name: n('ანბანის კუბიკები', 'Кубики с буквами', 'Letter blocks') },
+  arch: { Art: Arch, theme: 'build', name: n('თაღი', 'Арка', 'Arch') },
+  brick4: { Art: Brick4, theme: 'build', name: n('აგური (4)', 'Кубик (4)', 'Brick (4)') },
+  roof: { Art: Roof, theme: 'build', name: n('სახურავი', 'Крыша', 'Roof') },
+  bus: { Art: Bus, theme: 'vehicles', name: n('ავტობუსი', 'Автобус', 'Bus') },
+  plane: { Art: Plane, theme: 'vehicles', name: n('თვითმფრინავი', 'Самолёт', 'Plane') },
+  car: { Art: toy('car'), theme: 'vehicles', name: n('მანქანა', 'Машинка', 'Car') },
+  boat: { Art: Boat, theme: 'vehicles', name: n('ნავი', 'Кораблик', 'Boat') },
+  train: { Art: toy('train'), theme: 'vehicles', name: n('მატარებელი', 'Поезд', 'Train') },
+  copter: { Art: Copter, theme: 'vehicles', name: n('ვერტმფრენი', 'Вертолёт', 'Helicopter') },
+  rocket: { Art: toy('rocket'), theme: 'vehicles', name: n('რაკეტა', 'Ракета', 'Rocket') },
+  dino: { Art: Dino, theme: 'figures', name: n('დინოზავრი', 'Динозавр', 'Dinosaur') },
+  doll: { Art: Doll, theme: 'figures', name: n('თოჯინა', 'Кукла', 'Doll') },
+  robot: { Art: Robot, theme: 'figures', name: n('რობოტი', 'Робот', 'Robot') },
+  unicorn: { Art: Unicorn, theme: 'figures', name: n('უნიკორნი', 'Единорог', 'Unicorn') },
+  hero: { Art: Hero, theme: 'figures', name: n('სუპერგმირი', 'Супергерой', 'Superhero') },
+  matryoshka: { Art: Matryoshka, theme: 'figures', name: n('მატრიოშკა', 'Матрёшка', 'Matryoshka') },
+  pawn: { Art: Pawn, theme: 'games', name: n('პაიკი', 'Пешка', 'Pawn') },
+  cards: { Art: Cards, theme: 'games', name: n('ბანქო', 'Карты', 'Cards') },
+  puzzle: { Art: toy('puzzle'), theme: 'games', name: n('თავსატეხი', 'Пазл', 'Puzzle') },
+  dice: { Art: Dice, theme: 'games', name: n('კამათელი', 'Кубик', 'Dice') },
+  knight: { Art: Knight, theme: 'games', name: n('მხედარი', 'Конь', 'Knight') },
+  cube: { Art: Cube, theme: 'games', name: n('რუბიკის კუბი', 'Кубик Рубика', 'Puzzle cube') },
+  crayons: { Art: Crayons, theme: 'learn', name: n('ფერადი ფანქრები', 'Мелки', 'Crayons') },
+  book: { Art: Book, theme: 'learn', name: n('წიგნი', 'Книжка', 'Book') },
+  abacus: { Art: Abacus, theme: 'learn', name: n('საანგარიშო', 'Счёты', 'Abacus') },
+  globe: { Art: Globe, theme: 'learn', name: n('გლობუსი', 'Глобус', 'Globe') },
+  magnifier: { Art: Magnifier, theme: 'learn', name: n('გამადიდებელი', 'Лупа', 'Magnifier') },
+  sorter: { Art: Sorter, theme: 'learn', name: n('ფორმების ყუთი', 'Сортер', 'Shape sorter') },
+  rings: { Art: Rings, theme: 'baby', name: n('პირამიდა', 'Пирамидка', 'Stacking rings') },
+  rattle: { Art: Rattle, theme: 'baby', name: n('ჟღარუნა', 'Погремушка', 'Rattle') },
+  duck: { Art: toy('duck'), theme: 'baby', name: n('იხვი', 'Уточка', 'Duck') },
+  bottle: { Art: Bottle, theme: 'baby', name: n('ბოთლი', 'Бутылочка', 'Bottle') },
+  pacifier: { Art: Pacifier, theme: 'baby', name: n('საწოვარა', 'Соска', 'Pacifier') },
+  sleepystar: { Art: SleepyStar, theme: 'baby', name: n('მძინარე ვარსკვლავი', 'Сонная звёздочка', 'Sleepy star') },
+  frisbee: { Art: Frisbee, theme: 'outdoor', name: n('ფრისბი', 'Фрисби', 'Frisbee') },
+  kite: { Art: Kite, theme: 'outdoor', name: n('ფრანი', 'Воздушный змей', 'Kite') },
+  ball: { Art: toy('ball'), theme: 'outdoor', name: n('ბურთი', 'Мяч', 'Ball') },
+  bucket: { Art: Bucket, theme: 'outdoor', name: n('ვედრო', 'Ведёрко', 'Bucket') },
+  spade: { Art: Spade, theme: 'outdoor', name: n('ნიჩაბი', 'Лопатка', 'Spade') },
+  scooter: { Art: Scooter, theme: 'outdoor', name: n('სკუტერი', 'Самокат', 'Scooter') },
+} satisfies Record<string, { Art: Art; theme: Theme; name: Name }>
+export type FigureKey = keyof typeof FIGURES
+export const FIGURE_KEYS = Object.keys(FIGURES) as FigureKey[]
+export const isFigure = (k: unknown): k is FigureKey => typeof k === 'string' && k in FIGURES
+
+/** The ready-made set per group: the toy in the box and the six of the bouquet. */
+export const THEME_SET: Record<Theme, { hero: FigureKey; bouquet: FigureKey[] }> = {
+  soft: { hero: 'teddy', bouquet: ['bunny', 'kitty', 'teddy', 'heart', 'elephant', 'octopus'] },
+  build: { hero: 'blocks', bouquet: ['brick2', 'tower', 'blocks', 'arch', 'brick4', 'roof'] },
+  vehicles: { hero: 'car', bouquet: ['bus', 'plane', 'car', 'boat', 'train', 'copter'] },
+  figures: { hero: 'robot', bouquet: ['dino', 'doll', 'robot', 'unicorn', 'hero', 'matryoshka'] },
+  games: { hero: 'puzzle', bouquet: ['pawn', 'cards', 'puzzle', 'dice', 'knight', 'cube'] },
+  learn: { hero: 'abacus', bouquet: ['crayons', 'book', 'abacus', 'globe', 'magnifier', 'sorter'] },
+  baby: { hero: 'duck', bouquet: ['rings', 'rattle', 'duck', 'bottle', 'pacifier', 'sleepystar'] },
+  outdoor: { hero: 'ball', bouquet: ['frisbee', 'kite', 'ball', 'bucket', 'spade', 'scooter'] },
+}
+
+/** What a category box shows: the owner's own picks, filled up from its group where she left gaps. */
+export function boxLook(theme: Theme, hero?: string | null, bouquet?: (string | null | undefined)[] | null) {
+  const own = (bouquet ?? []).filter(isFigure).slice(0, 6)
+  const set = THEME_SET[theme]
+  return { Hero: FIGURES[isFigure(hero) ? hero : set.hero].Art, Bouquet: (own.length ? own : set.bouquet).map((k) => FIGURES[k].Art) }
+}
+
 export const BOUQUETS: Record<Theme, (() => React.JSX.Element)[]> = {
   soft: [Bunny, Kitty, toy('teddy'), HeartPillow, Elephant, Octopus],
   build: [Brick2, Tower, toy('blocks'), Arch, Brick4, Roof],

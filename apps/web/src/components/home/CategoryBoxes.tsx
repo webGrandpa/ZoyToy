@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import type { ToyKind } from '@zoytoy/ui/ToyArt'
 import type { Accent } from '../../lib/data'
-import { BOUQUETS, HERO, themeFor } from './Bouquet'
+import { boxLook, themeFor } from './Bouquet'
 
-type Cat = { id: number; title: string; slug: string; color: Accent; icon: ToyKind; theme?: string | null }
+type Cat = { id: number; title: string; slug: string; color: Accent; icon: ToyKind; theme?: string | null; heroFigure?: string | null; figures?: string[] | null }
 
 /**
  * Where the six land: angle from upright, distance from the box opening, stacking order. Five make a
@@ -29,7 +29,7 @@ export function CategoryBoxes({ locale, items }: { locale: string; items: Cat[] 
     <div className="boxes">
       {items.map((c, i) => {
         const theme = themeFor(c.slug, c.icon, c.theme)
-        const Hero = HERO[theme]
+        const { Hero, Bouquet } = boxLook(theme, c.heroFigure, c.figures)
         return (
           <Link
             key={c.id}
@@ -40,7 +40,7 @@ export function CategoryBoxes({ locale, items }: { locale: string; items: Cat[] 
             <span className="tbox-lid" aria-hidden="true" />
             <span className="tbox-in" aria-hidden="true" />
             <span className="tbox-bouquet" aria-hidden="true">
-              {BOUQUETS[theme].map((Art, j) => (
+              {Bouquet.map((Art, j) => (
                 <span
                   key={j}
                   className="tbox-b"

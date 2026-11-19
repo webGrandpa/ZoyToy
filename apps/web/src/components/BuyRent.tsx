@@ -19,7 +19,8 @@ const rentTotal = (rate: number, d: number) => Math.round(rate * d * (d >= 14 ? 
 export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSetting, 'whatsapp' | 'telegram' | 'instagram' | 'phone'> }) {
   const { m, f } = useI18n()
   const shop = useShop()
-  const [mode, setMode] = useState<'buy' | 'rent'>(p.rental && p.status !== 'sold' ? 'rent' : 'buy')
+  const rentOnly = !p.forSale && Boolean(p.rental)
+  const [mode, setMode] = useState<'buy' | 'rent'>(rentOnly || (p.rental && p.status !== 'sold') ? 'rent' : 'buy')
   const [days, setDays] = useState(7)
   const actionsRef = useRef<HTMLDivElement>(null)
   const [stuck, setStuck] = useState(false)
@@ -50,7 +51,7 @@ export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSett
 
   return (
     <div className={`buyrent mode-${mode}`}>
-      {rental && !sold ? (
+      {rental && !sold && !rentOnly ? (
         <div className="toggle" role="radiogroup" aria-label={m.product.buyOrRent} data-mode={mode}>
           <span className="thumb" aria-hidden="true" />
           {(['rent', 'buy'] as const).map((k) => (
@@ -107,7 +108,12 @@ export function BuyRent({ p, settings }: { p: ProductVM; settings: Pick<SiteSett
         <div className="deposit">
           <IconLock />
           <span>
-            <b>{f(m.product.deposit, { amount: money(rental.deposit) })}</b> {m.product.depositNote} {m.product.rentNote}
+            <b>{f(m.product.deposit, { amount: money(rental.deposit) })}</b>
+            <ul className="deposit-lines">
+              {m.product.depositLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
           </span>
         </div>
       ) : null}

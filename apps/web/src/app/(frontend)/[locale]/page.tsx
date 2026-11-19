@@ -65,7 +65,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </p>
               <h1 id="hero-title">
                 {m.hero.titleA ? <span className="t-a">{m.hero.titleA}</span> : null}{' '}
-                <span className="t-b">{m.hero.titleB}</span>{' '}
+                {/* one banner per word („და“ | „ერთხელ“), leaning on each other (owner, 2026-11) */}
+                <span className="t-b-row">
+                  {m.hero.titleB.split(/\s+/).filter(Boolean).map((word, i) => (
+                    <span key={i} className="t-b" style={{ ['--k' as string]: i }}>{word}</span>
+                  ))}
+                </span>{' '}
                 <span className="t-c">{m.hero.titleC}</span>
               </h1>
               <p className="lede">{m.hero.lede}</p>

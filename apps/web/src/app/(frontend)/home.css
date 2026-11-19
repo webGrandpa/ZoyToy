@@ -86,18 +86,22 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
 /* sized so „ასჯერ იქირავე“ (the longest line of the slogan) stays on one line next to the mascot */
 .hero2 h1 { margin-top: 18px; font-size: clamp(40px, 5.3vw, 74px); line-height: 1.04; letter-spacing: -0.03em; }
 .hero2 h1 .t-a, .hero2 h1 .t-c { display: block; }
+/* the middle words: each its own pink banner with its own outline, set side by side and tilted in turn */
+.hero2 h1 .t-b-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .06em 0; margin: .06em 0 .1em; }
 .hero2 h1 .t-b {
-  display: inline-block; margin: .06em 0 .1em; padding: .02em .22em .08em;
+  display: inline-block; padding: .02em .22em .08em;
   background: var(--zt-bubble); color: #fff; border: 4px solid var(--zt-edge); border-radius: 22px;
   box-shadow: 0 7px 0 var(--zt-edge); transform: rotate(-3deg);
 }
+.hero2 h1 .t-b + .t-b { margin-left: -.1em; }
+.hero2 h1 .t-b:nth-child(even) { transform: rotate(2.5deg) translateY(.04em); }
 .hero2 h1 .t-c { color: var(--zt-grape); text-shadow: 0 4px 0 rgb(31 26 61 / .16); }
 .hero2 h1 .t-c::after { content: ""; display: block; width: min(320px, 70%); height: 18px; margin-top: 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 18'%3E%3Cpath d='M4 10 q18 -12 36 0 t36 0 t36 0 t36 0 t36 0 t36 0 t36 0 t36 0' fill='none' stroke='%23FFC83D' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E") left center / contain no-repeat; }
 /* hero entrance: whole lines slide up in a quick, calm sequence — the pink pill arrives together with its word,
    the squiggle draws itself under the last line (no letter-by-letter drop, no empty pill, no floating squiggle) */
 .hero-pill { animation: hero-in .55s var(--zt-ease-out) both; }
 .hero2 h1 .t-a { animation: hero-in .6s var(--zt-ease-out) .06s both; }
-.hero2 h1 .t-b { animation: pill-in .65s var(--zt-spring) .16s both; }
+.hero2 h1 .t-b { animation: pill-in .65s var(--zt-spring) calc(.16s + var(--k, 0) * .12s) both; }
 .hero2 h1 .t-c { animation: hero-in .6s var(--zt-ease-out) .26s both; }
 .hero2 h1 .t-c::after { transform-origin: 0 50%; animation: squiggle-in .5s var(--zt-ease-out) .62s both; }
 .hero2 .lede { animation: hero-in .6s var(--zt-ease-out) .36s both; }

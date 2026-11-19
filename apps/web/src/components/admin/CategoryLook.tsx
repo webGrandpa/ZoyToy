@@ -65,7 +65,8 @@ const PALETTE = {
   '--zt-grape': ACCENT_HEX.grape,
 } as CSSProperties
 
-const FAN = [-50, -25, 0, 25, 50, 0]
+// all six on one arc above the box — none in front of the toy peeking out
+const FAN = [-62, -37, -12, 12, 37, 62]
 
 /**
  * Category form: the home-page box put together toy by toy — any of the 49 drawings peeks out of the
@@ -207,7 +208,8 @@ export function CategoryLook({ path = 'theme' }: { path?: string }) {
       </div>
       <div className="zt-cat__preview">
         <p className="zt-cat__title">{ui.preview}</p>
-        <div className="zt-catbox" style={{ ['--tint' as string]: ACCENT_HEX[color] }}>
+        {/* while the bouquet is being picked the box is „open“: no lid in front of the toys */}
+        <div className={`zt-catbox${mode === 'bouquet' ? ' is-open' : ''}`} style={{ ['--tint' as string]: ACCENT_HEX[color] }}>
           <span className="zt-catbox__fan" aria-hidden="true">
             {Bouquet.map((Art, i) => (
               <span key={i} style={{ ['--a' as string]: `${FAN[i] ?? 0}deg`, ['--j' as string]: i }}>

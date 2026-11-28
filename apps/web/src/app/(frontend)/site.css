@@ -548,13 +548,19 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* home spotlight frame: a cut-out gets the tint behind it instead of the page showing through */
 .spot-art > img.spot-cut { background: color-mix(in srgb, var(--tint, var(--zt-sun)) 30%, var(--zt-surface)); object-fit: contain; padding: 7%; box-sizing: border-box; }
 
-/* item page: video review (lib/video.ts) — wide players 16:9, Shorts / Reels / TikTok upright */
-.pdp-video { grid-column: 1 / -1; display: grid; gap: 12px; padding: 18px 20px 16px; }
-.pdp-video h2 { margin: 0; font-size: 20px; }
-.pdp-video__frame { position: relative; width: 100%; max-width: 860px; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 2px solid var(--zt-edge); background: #000; }
-.pdp-video__frame.is-tall { aspect-ratio: 9 / 16; width: min(100%, 380px); justify-self: center; }
-.pdp-video__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.pdp-video__link { justify-self: start; font-weight: 800; color: var(--zt-grape); }
+/* item page: right column = details + video card; the video plays in a window over the page */
+.pdp-side { display: grid; gap: 20px; align-content: start; }
+.video-card { display: grid; gap: 12px; padding: 20px; justify-items: start; }
+.video-card h2 { margin: 0; font-size: 19px; }
+.video-card__play { gap: 8px; }
+.video-card__link { font-size: 14px; font-weight: 700; color: var(--zt-grape); overflow-wrap: anywhere; }
+.video-modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 18px; background: rgb(15 12 35 / .72); animation: fade-in .2s ease-out; }
+.video-modal__box { position: relative; width: min(960px, 100%); aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; border: 3px solid var(--zt-edge); background: #000; box-shadow: 0 10px 0 var(--zt-edge); }
+.video-modal__box.is-tall { width: min(400px, 100%, calc((100vh - 60px) * 9 / 16)); aspect-ratio: 9 / 16; }
+.video-modal__box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-modal__close { position: absolute; top: 10px; right: 10px; z-index: 2; }
+@keyframes fade-in { from { opacity: 0; } }
+.cond-size { margin: 4px 0 8px; font-size: 15px; }
 
 /* „What toy should we add?“ (WishForm.tsx) */
 .wish { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 28px; padding: 22px; background: color-mix(in srgb, var(--zt-sun) 16%, var(--zt-surface)); }

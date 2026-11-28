@@ -144,6 +144,8 @@ h2 { font-size: clamp(28px, 4.4vw, 46px); }
   .fl.f1 { left: 1%; top: 30%; } .fl.f2 { display: none; }
   .fl.f3 { left: 3%; bottom: 2%; } .fl.f4 { right: 3%; bottom: 4%; }
 }
+/* phones: only Zoy and his box — the duck, ball, blocks and rocket around him go (owner, 2026-11) */
+@media (max-width: 760px) { .floaters .fl { display: none; } }
 /* phones: a smaller mascot so the title and the buttons fit on the first screen */
 @media (max-width: 560px) {
   .hero2-art .mascot { width: min(200px, 54%); }

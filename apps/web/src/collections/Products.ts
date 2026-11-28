@@ -115,15 +115,20 @@ export const Products: CollectionConfig = {
             { name: 'shortDescription', type: 'textarea', localized: true, label: L('მოკლე აღწერა', 'Краткое описание', 'Short description'), maxLength: 220 },
             { name: 'description', type: 'richText', localized: true, label: L('სრული აღწერა', 'Полное описание', 'Full description') },
             { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true, required: true, label: L('კატეგორიები', 'Категории', 'Categories') },
+            // a video review — YouTube now, later the owner's own on YouTube / Facebook / Instagram / TikTok (lib/video.ts)
             {
-              name: 'size',
+              name: 'videoUrl',
               type: 'text',
-              localized: true,
-              label: L('ზომა / მოცულობა', 'Размер / объём', 'Size / volume'),
+              label: L('ვიდეო განხილვა (ბმული)', 'Видеообзор (ссылка)', 'Video review (link)'),
               admin: {
-                placeholder: '30 × 20 × 15 სმ',
-                description: L('ნივთის გვერდზე „დეტალებში“ ჩანს. მაგ. „30 × 20 × 15 სმ“, „40 სმ სიმაღლე“, „1,5 ლ“.', 'Видно в «Деталях» на странице товара. Напр. «30 × 20 × 15 см», «40 см высота», «1,5 л».', 'Shown in the item’s details, e.g. “30 × 20 × 15 cm”, “40 cm tall”, “1.5 L”.'),
+                placeholder: 'https://youtu.be/…',
+                description: L(
+                  'ჩასვი YouTube-ის, Facebook-ის, Instagram-ის ან TikTok-ის ვიდეოს ბმული — ნივთის გვერდზე „დეტალების“ ქვეშ გამოჩნდება ბარათი „ვიდეო იხილეთ ბმულზე“, ღილაკით ვიდეო იქვე ჩაირთვება.',
+                  'Вставьте ссылку на видео YouTube, Facebook, Instagram или TikTok — под «Деталями» на странице товара появится карточка «Видео по ссылке», видео включается кнопкой.',
+                  'Paste a YouTube, Facebook, Instagram or TikTok video link — a “Watch the video” card appears under the details on the item page; its button plays it right there.',
+                ),
               },
+              validate: (value: unknown) => !value || /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}\/\S*$/i.test(String(value).trim()) || 'https://…',
             },
             {
               type: 'row',
@@ -150,6 +155,16 @@ export const Products: CollectionConfig = {
           fields: [
             { name: 'condition', type: 'select', required: true, defaultValue: 'very_good', label: L('მდგომარეობა', 'Состояние', 'Condition'), options: [...CONDITIONS] },
             { name: 'conditionNotes', type: 'textarea', localized: true, label: L('შენიშვნა მდგომარეობაზე', 'Заметка о состоянии', 'Condition notes') },
+            {
+              name: 'size',
+              type: 'text',
+              localized: true,
+              label: L('ზომა / მოცულობა', 'Размер / объём', 'Size / volume'),
+              admin: {
+                placeholder: '30 × 20 × 15 სმ',
+                description: L('ნივთის გვერდზე მდგომარეობის ბარათში ჩანს. მაგ. „30 × 20 × 15 სმ“, „40 სმ სიმაღლე“, „1,5 ლ“.', 'Видно в карточке состояния на странице товара. Напр. «30 × 20 × 15 см», «40 см высота», «1,5 л».', 'Shown in the item’s condition card, e.g. “30 × 20 × 15 cm”, “40 cm tall”, “1.5 L”.'),
+              },
+            },
             {
               name: 'defects',
               type: 'array',
@@ -224,21 +239,6 @@ export const Products: CollectionConfig = {
                   ],
                 },
               ],
-            },
-            // a video review — YouTube now, later the owner's own on YouTube / Facebook / Instagram / TikTok (lib/video.ts)
-            {
-              name: 'videoUrl',
-              type: 'text',
-              label: L('ვიდეო განხილვა (ბმული)', 'Видеообзор (ссылка)', 'Video review (link)'),
-              admin: {
-                placeholder: 'https://youtu.be/…',
-                description: L(
-                  'ჩასვი YouTube-ის, Facebook-ის, Instagram-ის ან TikTok-ის ვიდეოს ბმული — ნივთის გვერდზე პლეერად გამოჩნდება.',
-                  'Вставьте ссылку на видео YouTube, Facebook, Instagram или TikTok — на странице товара появится плеер.',
-                  'Paste a YouTube, Facebook, Instagram or TikTok video link — it shows as a player on the item page.',
-                ),
-              },
-              validate: (value: unknown) => !value || /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}\/\S*$/i.test(String(value).trim()) || 'https://…',
             },
           ],
         },

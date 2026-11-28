@@ -284,9 +284,9 @@ export interface Product {
    */
   categories: (number | Category)[];
   /**
-   * Shown in the item’s details, e.g. “30 × 20 × 15 cm”, “40 cm tall”, “1.5 L”.
+   * Paste a YouTube, Facebook, Instagram or TikTok video link — a “Watch the video” card appears under the details on the item page; its button plays it right there.
    */
-  size?: string | null;
+  videoUrl?: string | null;
   /**
    * e.g. 3 years = 36
    */
@@ -307,6 +307,10 @@ export interface Product {
    * What the buyer should know about the condition — briefly.
    */
   conditionNotes?: string | null;
+  /**
+   * Shown in the item’s condition card, e.g. “30 × 20 × 15 cm”, “40 cm tall”, “1.5 L”.
+   */
+  size?: string | null;
   /**
    * Each with a short note and a spot on the photo (X/Y in %) for the loupe
    */
@@ -375,10 +379,6 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Paste a YouTube, Facebook, Instagram or TikTok video link — it shows as a player on the item page.
-   */
-  videoUrl?: string | null;
   /**
    * Untick if the item is only rented out — no price needed; the site shows rent only and it cannot go into the cart.
    */
@@ -1095,12 +1095,13 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   categories?: T;
-  size?: T;
+  videoUrl?: T;
   ageMinMonths?: T;
   ageMaxMonths?: T;
   origin?: T;
   condition?: T;
   conditionNotes?: T;
+  size?: T;
   defects?:
     | T
     | {
@@ -1124,7 +1125,6 @@ export interface ProductsSelect<T extends boolean = true> {
         role?: T;
         id?: T;
       };
-  videoUrl?: T;
   forSale?: T;
   price?: T;
   compareAtPrice?: T;

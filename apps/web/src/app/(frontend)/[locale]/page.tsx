@@ -89,7 +89,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <ToyArt kind="blocks" className="fl f4" />
               </div>
               <Twinkles />
-              <Mascot season={season} label={m.hero.mascotLabel} hint={m.hero.mascotHint} />
+              <Mascot season={season} label={m.hero.mascotLabel} hint={m.hero.mascotHint} box={m.hero.box} />
             </div>
           </div>
           <div className="hill" aria-hidden="true">

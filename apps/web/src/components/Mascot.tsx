@@ -14,7 +14,10 @@ const EYES: [number, number][] = [[96, 52], [124, 52]]
  * Follows the pointer, dives and pops out on tap, falls asleep when the visitor is idle,
  * wears a seasonal outfit chosen in the admin.
  */
-export function Mascot({ season, label, hint }: { season: Season; label: string; hint: string }) {
+const BOX = '#4E6130'
+const BOX_RIM = '#3C4B24'
+
+export function Mascot({ season, label, hint, box }: { season: Season; label: string; hint: string; box: readonly string[] }) {
   const ref = useRef<HTMLButtonElement>(null)
   const pupils = useRef<(SVGCircleElement | null)[]>([])
   const [party, setParty] = useState(false)
@@ -151,10 +154,14 @@ export function Mascot({ season, label, hint }: { season: Season; label: string;
           <text x="150" y="34" fontFamily="FiraGO, sans-serif" fontWeight="900" fontSize="18" fill="var(--zt-grape)">z</text>
           <text x="164" y="20" fontFamily="FiraGO, sans-serif" fontWeight="900" fontSize="24" fill="var(--zt-grape)">Z</text>
         </g>
-        <rect x="44" y="132" width="132" height="66" rx="18" fill="var(--zt-grape)" stroke={E} strokeWidth="5" />
-        <rect x="36" y="122" width="148" height="20" rx="10" fill="var(--zt-grape-deep)" stroke={E} strokeWidth="5" />
-        <path d="M62 160 h20 a5 5 0 1 1 8 0 h20 v12 a5 5 0 1 0 0 8 v12 h-48z" fill="var(--zt-sun)" stroke={E} strokeWidth="3.5" strokeLinejoin="round" />
-        <text x="148" y="178" textAnchor="middle" fontFamily="FiraGO, sans-serif" fontWeight="900" fontSize="20" fill="#fff" stroke={E} strokeWidth="1">ZOY</text>
+        {/* the box: dark swamp green with what the shop is about written on it (owner, 2026-11) */}
+        <rect x="44" y="132" width="132" height="66" rx="18" fill={BOX} stroke={E} strokeWidth="5" />
+        <rect x="36" y="122" width="148" height="20" rx="10" fill={BOX_RIM} stroke={E} strokeWidth="5" />
+        <text textAnchor="middle" fontFamily="FiraGO, 'Noto Sans Georgian', sans-serif" fontWeight="900" fill="#fff" paintOrder="stroke" stroke={E} strokeWidth="3" strokeLinejoin="round">
+          {box.map((line, i) => (
+            <tspan key={i} x="110" y={box.length > 1 ? 162 + i * 22 : 172} fontSize={box.length > 1 ? 17 : 18}>{line}</tspan>
+          ))}
+        </text>
       </svg>
       <span className="mascot-hint">{hint}</span>
     </button>
